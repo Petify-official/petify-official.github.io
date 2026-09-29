@@ -1,4 +1,4 @@
-# Petify Storefront
+# Petify Official
 
 Petify's product catalog is a React + Vite web app. Product data can come from Supabase; when Supabase is not configured or its catalog request fails, the storefront uses the bundled catalog in `src/data/catalog.js`.
 
