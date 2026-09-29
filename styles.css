@@ -715,6 +715,7 @@ footer a {
 }
 
 .admin-section-order li {
+  min-width: 0;
   min-height: 54px;
   padding: 0.5rem 0.75rem;
   display: flex;
@@ -756,14 +757,30 @@ footer a {
 }
 
 .admin-section-order-actions {
+  display: flex;
+  min-width: 0;
+  flex: 0 1 auto;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.admin-section-order-actions button {
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0.45rem 0.7rem;
+  white-space: nowrap;
+}
+
+.admin-section-order-actions .admin-order-arrow {
+  width: 38px;
+  flex: 0 0 38px;
+  padding: 0.3rem;
 }
 
 .admin-section-order-actions .admin-delete-button {
-  min-height: 38px;
-  padding: 0.3rem 0.65rem;
   border: 1px solid #fecaca;
   border-radius: 4px;
   background: white;
@@ -772,25 +789,15 @@ footer a {
   cursor: pointer;
 }
 
-.admin-section-order-actions .admin-delete-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.admin-section-order-actions {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.admin-section-order-actions button {
-  width: 38px;
-  min-height: 38px;
-  padding: 0.3rem;
-}
-
 .admin-section-order-actions button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.admin-section-rename button {
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
 }
 
 .admin-table-wrap {
