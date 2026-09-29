@@ -840,6 +840,27 @@ footer a {
   object-fit: cover;
 }
 
+.admin-product-placeholder {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 4px;
+  background: #e2e8f0;
+}
+
+.admin-store-logo-empty {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  text-align: center;
+}
+
 .admin-product-cell strong,
 .admin-product-cell span {
   display: block;

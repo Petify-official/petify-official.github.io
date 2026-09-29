@@ -83,9 +83,10 @@ function ProductCard({ product, combo = false }) {
 }
 
 export default function App() {
-  const [products, setProducts] = useState(siteData.products);
-  const [sections, setSections] = useState(siteData.sections);
-  const [logoUrl, setLogoUrl] = useState(siteData.header.logoUrl);
+  const [products, setProducts] = useState([]);
+  const [sections, setSections] = useState([]);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState(false);
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === "#admin");
   const [showScrollTop, setShowScrollTop] = useState(window.scrollY > 320);
@@ -110,6 +111,14 @@ export default function App() {
       setSections(catalog.sections);
       setLogoUrl(catalog.logoUrl);
       setCatalogError(Boolean(catalog.error));
+    }).catch(() => {
+      if (!active) return;
+      setProducts([]);
+      setSections([]);
+      setLogoUrl("");
+      setCatalogError(true);
+    }).finally(() => {
+      if (active) setCatalogLoading(false);
     });
     return () => { active = false; };
   }, []);
@@ -120,9 +129,11 @@ export default function App() {
     <>
       <header>
         <h1 className="brand-title">
-          <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}>
-            <img src={logoUrl} alt={`${siteData.header.title} logo`} className="brand-logo" />
-          </a>
+          {logoUrl && (
+            <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}>
+              <img src={logoUrl} alt={`${siteData.header.title} logo`} className="brand-logo" />
+            </a>
+          )}
         </h1>
         <p className="brand-tagline">{siteData.header.tagline}</p>
         <div className="hero-pills">
@@ -131,7 +142,8 @@ export default function App() {
       </header>
 
       <main className="container" id="top">
-        {catalogError && <p className="catalog-notice" role="status">Catalog service is unavailable. Showing the saved product catalog.</p>}
+        {catalogLoading && <p className="catalog-notice" role="status">Loading catalog...</p>}
+        {catalogError && <p className="catalog-notice" role="alert">Catalog service is unavailable. Products could not be loaded from Supabase.</p>}
         {sections.map((section) => {
           const sectionProducts = products.filter((product) => product.sectionId === section.id);
           if (!sectionProducts.length) return null;

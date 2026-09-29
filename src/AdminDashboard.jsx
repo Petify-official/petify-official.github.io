@@ -7,7 +7,6 @@ import {
   getAdminProducts,
   getAdminSections,
   getStoreLogo,
-  migrateLegacyProductImages,
   renameCatalogSection,
   saveCatalogSectionOrder,
   saveProduct,
@@ -162,38 +161,6 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
     }
   }
 
-  async function moveLegacyImages() {
-    setBusy(true);
-    setError("");
-    setNotice("");
-
-    try {
-      const storedItems = imageItems.filter((item) => item.url);
-      const result = await migrateLegacyProductImages(form.id, storedItems.map((item) => item.url));
-      if (!result.migratedCount) return;
-
-      let storedIndex = 0;
-      const nextItems = imageItems.map((item) => item.file ? item : { ...item, url: result.images[storedIndex++] });
-
-      const product = {
-        ...form,
-        isNew: false,
-        specs: form.specsText.split("\n").map((item) => item.trim()).filter(Boolean),
-        images: nextItems.filter((item) => item.url).map((item) => item.url),
-        displayOrder: Number(form.displayOrder) || 0,
-      };
-      await saveProduct(product);
-      update("images", result.images);
-      setImageItems(nextItems);
-      setNotice(`${result.migratedCount} photo${result.migratedCount === 1 ? "" : "s"} moved to Supabase Storage.`);
-      await onSave({ closeEditor: false });
-    } catch (moveError) {
-      setError(moveError.message || "The current photos could not be moved.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <form className="admin-editor" onSubmit={submit}>
       <div className="admin-editor-heading">
@@ -234,12 +201,6 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
           setImageItems((current) => [...current, ...selected]);
           event.target.value = "";
         }} /><span className="admin-field-hint">Select multiple photos at once, or add more before saving.</span></label>
-        {isEditing && imageItems.some((item) => item.url?.startsWith("/images/")) && (
-          <div className="admin-span-two">
-            <button className="admin-secondary-button" type="button" onClick={moveLegacyImages} disabled={busy}>Move current photos to Supabase Storage</button>
-            <span className="admin-field-hint">This replaces the product's local image links after the uploads succeed.</span>
-          </div>
-        )}
         {imageItems.length > 0 && (
           <div className="admin-image-list admin-span-two" aria-label="Product photo order">
             {imageItems.map((item, index) => (
@@ -462,7 +423,7 @@ function ProductManager({ session }) {
               </form>
             )}
             <form className="admin-store-logo" onSubmit={saveLogo}>
-              <img src={storeLogo || "/images/logo.png"} alt="Current store logo" />
+              {storeLogo ? <img src={storeLogo} alt="Current store logo" /> : <span className="admin-store-logo-empty">No logo uploaded</span>}
               <label>Store logo<input type="file" accept="image/*" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} /></label>
               <button className="admin-primary-button" type="submit" disabled={savingLogo || !logoFile}>{savingLogo ? "Uploading logo..." : "Save logo"}</button>
               {logoNotice && <span className="admin-success" role="status">{logoNotice}</span>}
@@ -503,7 +464,7 @@ function ProductManager({ session }) {
                   <tbody>
                     {products.map((product) => (
                       <tr key={product.id}>
-                        <td><div className="admin-product-cell"><img src={product.images[0] || "/images/logo.png"} alt="" /><div><strong>{product.title}</strong><span>{product.id}</span></div></div></td>
+                        <td><div className="admin-product-cell">{product.images[0] ? <img src={product.images[0]} alt="" /> : <span className="admin-product-placeholder" aria-hidden="true" />}<div><strong>{product.title}</strong><span>{product.id}</span></div></div></td>
                         <td>{sections.find((section) => section.id === product.sectionId)?.title || "Unassigned"}</td>
                         <td>{product.price || "—"}</td>
                         <td><span className={`admin-status${product.isActive ? " is-active" : ""}`}>{product.isActive ? "Visible" : "Hidden"}</span></td>

@@ -115,28 +115,6 @@ export async function uploadProductImages(productId, files, onProgress) {
   return uploadedUrls;
 }
 
-export async function migrateLegacyProductImages(productId, images) {
-  const replacements = new Map();
-
-  for (const image of images) {
-    if (!image.startsWith("/images/") || replacements.has(image)) continue;
-
-    const response = await fetch(image);
-    if (!response.ok) throw new Error(`Could not load the current photo ${image} (${response.status}).`);
-
-    const blob = await response.blob();
-    const filename = image.split("/").pop() || "product-image";
-    const file = new File([blob], filename, { type: blob.type || "application/octet-stream" });
-    const [uploadedUrl] = await uploadProductImages(productId, [file]);
-    replacements.set(image, uploadedUrl);
-  }
-
-  return {
-    images: images.map((image) => replacements.get(image) || image),
-    migratedCount: replacements.size,
-  };
-}
-
 export async function saveProduct(product) {
   const row = {
     id: product.id,

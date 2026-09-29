@@ -20,7 +20,13 @@ function mapProduct(row) {
 
 export async function getCatalog() {
   if (!supabase) {
-    return { products: siteData.products, sections: siteData.sections, logoUrl: siteData.header.logoUrl, source: "local", error: null };
+    return {
+      products: [],
+      sections: [],
+      logoUrl: "",
+      source: "supabase",
+      error: new Error("Supabase is not configured."),
+    };
   }
 
   const [productsResult, sectionsResult, settingsResult] = await Promise.all([
@@ -43,10 +49,10 @@ export async function getCatalog() {
 
   if (productsResult.error || sectionsResult.error) {
     return {
-      products: siteData.products,
-      sections: siteData.sections,
-      logoUrl: siteData.header.logoUrl,
-      source: "local",
+      products: [],
+      sections: [],
+      logoUrl: settingsResult.data?.logo_url ?? "",
+      source: "supabase",
       error: productsResult.error || sectionsResult.error,
     };
   }
@@ -54,7 +60,7 @@ export async function getCatalog() {
   return {
     products: productsResult.data.map(mapProduct),
     sections: sectionsResult.data,
-    logoUrl: settingsResult.data?.logo_url || siteData.header.logoUrl,
+    logoUrl: settingsResult.data?.logo_url ?? "",
     source: "supabase",
     error: settingsResult.error,
   };
