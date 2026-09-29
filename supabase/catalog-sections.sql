@@ -69,3 +69,38 @@ create policy "Petify admins can update catalog sections"
   to authenticated
   using (public.is_petify_admin())
   with check (public.is_petify_admin());
+
+grant delete on public.catalog_sections to authenticated;
+
+drop policy if exists "Petify admins can delete empty catalog sections" on public.catalog_sections;
+create policy "Petify admins can delete empty catalog sections"
+  on public.catalog_sections for delete
+  to authenticated
+  using (public.is_petify_admin());
+
+create table if not exists public.site_settings (
+  id text primary key check (id = 'storefront'),
+  logo_url text,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.site_settings (id)
+values ('storefront')
+on conflict (id) do nothing;
+
+alter table public.site_settings enable row level security;
+grant select on public.site_settings to anon, authenticated;
+grant update on public.site_settings to authenticated;
+
+drop policy if exists "Store logo is readable by everyone" on public.site_settings;
+create policy "Store logo is readable by everyone"
+  on public.site_settings for select
+  to anon, authenticated
+  using (id = 'storefront');
+
+drop policy if exists "Petify admins can update store logo" on public.site_settings;
+create policy "Petify admins can update store logo"
+  on public.site_settings for update
+  to authenticated
+  using (public.is_petify_admin())
+  with check (public.is_petify_admin());

@@ -85,6 +85,7 @@ function ProductCard({ product, combo = false }) {
 export default function App() {
   const [products, setProducts] = useState(siteData.products);
   const [sections, setSections] = useState(siteData.sections);
+  const [logoUrl, setLogoUrl] = useState(siteData.header.logoUrl);
   const [catalogError, setCatalogError] = useState(false);
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === "#admin");
   const [showScrollTop, setShowScrollTop] = useState(window.scrollY > 320);
@@ -107,6 +108,7 @@ export default function App() {
       if (!active) return;
       setProducts(catalog.products);
       setSections(catalog.sections);
+      setLogoUrl(catalog.logoUrl);
       setCatalogError(Boolean(catalog.error));
     });
     return () => { active = false; };
@@ -119,7 +121,7 @@ export default function App() {
       <header>
         <h1 className="brand-title">
           <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}>
-            <img src={siteData.header.logoUrl} alt={`${siteData.header.title} logo`} className="brand-logo" />
+            <img src={logoUrl} alt={`${siteData.header.title} logo`} className="brand-logo" />
           </a>
         </h1>
         <p className="brand-tagline">{siteData.header.tagline}</p>

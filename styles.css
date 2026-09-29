@@ -15,12 +15,12 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-
 body {
   background-color: var(--bg-light);
   color: var(--text-dark);
   line-height: 1.6;
 }
+
 
 /* Header / Hero */
 header {
@@ -406,13 +406,6 @@ footer a {
   background: #f8fafc;
 }
 
-/*
-  width: 152px;
-  width: min(100%, 430px);
-
-  .admin-login {
-    width: min(100%, 430px);
-  */
 .admin-login {
   width: min(100%, 430px);
   min-height: auto;
@@ -440,6 +433,20 @@ footer a {
   font-size: 1.8rem;
   line-height: 1.2;
 }
+
+.admin-login label,
+.admin-form-grid label {
+  display: grid;
+  gap: 0.4rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.admin-login label {
+  margin-top: 1.1rem;
+}
+
 .admin-form-grid input:not([type="checkbox"]),
 .admin-form-grid select,
 .admin-form-grid textarea {
@@ -649,6 +656,143 @@ footer a {
   border-color: var(--primary);
 }
 
+.admin-store-logo {
+  margin: 1rem 0 1.5rem;
+  padding: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: white;
+}
+
+.admin-store-logo img {
+  width: 72px;
+  height: 72px;
+  flex: 0 0 72px;
+  padding: 0.2rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: white;
+  object-fit: contain;
+}
+
+.admin-store-logo label {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.admin-store-logo input {
+  width: 100%;
+  font: inherit;
+  font-weight: 400;
+}
+
+.admin-store-logo .admin-success {
+  margin: 0;
+}
+
+.admin-section-order {
+  margin: 1.5rem 0;
+}
+
+.admin-section-order h2 {
+  margin-bottom: 0.6rem;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.admin-section-order ol {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.admin-section-order li {
+  min-height: 54px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: white;
+}
+
+.admin-section-order-name strong,
+.admin-section-order-name small {
+  display: block;
+}
+
+.admin-section-order-name small {
+  color: var(--text-muted);
+  font-size: 0.76rem;
+}
+
+.admin-section-rename {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-section-rename input {
+  min-width: 0;
+  flex: 1;
+  min-height: 38px;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  color: var(--text-dark);
+  font: inherit;
+}
+
+.admin-section-order-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.admin-section-order-actions .admin-delete-button {
+  min-height: 38px;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  background: white;
+  color: #b91c1c;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-section-order-actions .admin-delete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-section-order-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.admin-section-order-actions button {
+  width: 38px;
+  min-height: 38px;
+  padding: 0.3rem;
+}
+
+.admin-section-order-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .admin-table-wrap {
   overflow-x: auto;
   border: 1px solid #dbe3ea;
@@ -755,10 +899,52 @@ footer a {
 }
 
 .admin-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
 .admin-field-hint {
   font-weight: 400;
 }
+
+.admin-upload-progress {
+  margin-top: 1.25rem;
+  padding: 0.9rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: #f1f5f9;
 }
+
+.admin-upload-progress-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.admin-upload-progress-track {
+  height: 10px;
+  margin-top: 0.55rem;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #cbd5e1;
+}
+
+.admin-upload-progress-fill {
+  height: 100%;
+  background: #16a34a;
+  transition: width 0.2s ease;
+}
+
+.admin-upload-progress .admin-field-hint {
+  display: block;
+  margin-top: 0.35rem;
+  overflow-wrap: anywhere;
+}
+
 .admin-image-list {
   display: flex;
   flex-wrap: wrap;
@@ -767,21 +953,54 @@ footer a {
 
 .admin-image-item {
   position: relative;
-  width: 112px;
+  width: 152px;
 }
 
 .admin-image-item img {
   display: block;
-  width: 112px;
-  height: 88px;
+  width: 152px;
+  height: 112px;
   border-radius: 4px;
   background: #e2e8f0;
   object-fit: cover;
 }
 
-.admin-image-item button {
-  width: 100%;
+.admin-image-order {
+  display: block;
   margin-top: 0.3rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.admin-image-actions {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.admin-image-actions button {
+  flex: 0 0 34px;
+  width: 34px;
+  min-height: 34px;
+  margin: 0;
+  padding: 0.3rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+  color: #334155;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-image-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.admin-image-actions .admin-remove-image-button {
+  flex: 1 1 auto;
+  min-width: 0;
   border-color: #fecaca;
   color: #b91c1c;
   font-size: 0.76rem;
@@ -858,6 +1077,23 @@ footer a {
 
   .admin-section-form label {
     flex-basis: 100%;
+  }
+
+  .admin-store-logo {
+    flex-wrap: wrap;
+  }
+
+  .admin-store-logo label {
+    flex-basis: calc(100% - 84px);
+  }
+
+  .admin-section-order li {
+    flex-wrap: wrap;
+  }
+
+  .admin-section-order-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .admin-form-grid {

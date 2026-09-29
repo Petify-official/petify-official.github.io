@@ -37,6 +37,17 @@ export async function getAdminSections() {
   return data;
 }
 
+export async function getStoreLogo() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("logo_url")
+    .eq("id", "storefront")
+    .maybeSingle();
+  if (error) throw error;
+
+  return data?.logo_url ?? "";
+}
+
 export async function createCatalogSection(section) {
   const { error } = await supabase.from("catalog_sections").insert({
     id: section.id,
@@ -46,10 +57,46 @@ export async function createCatalogSection(section) {
   if (error) throw error;
 }
 
-export async function uploadProductImages(productId, files) {
+export async function renameCatalogSection(sectionId, title) {
+  const { error } = await supabase
+    .from("catalog_sections")
+    .update({ title, updated_at: new Date().toISOString() })
+    .eq("id", sectionId);
+  if (error) throw error;
+}
+
+export async function deleteCatalogSection(sectionId) {
+  const { error } = await supabase.from("catalog_sections").delete().eq("id", sectionId);
+  if (error) throw error;
+}
+
+export async function saveCatalogSectionOrder(sections) {
+  const results = await Promise.all(sections.map((section, index) =>
+    supabase
+      .from("catalog_sections")
+      .update({ display_order: index + 1 })
+      .eq("id", section.id)
+  ));
+  const failedUpdate = results.find((result) => result.error);
+  if (failedUpdate) throw failedUpdate.error;
+}
+
+export async function updateStoreLogo(file) {
+  const [logoUrl] = await uploadProductImages("store-settings", [file]);
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ logo_url: logoUrl, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
+
+  return logoUrl;
+}
+
+export async function uploadProductImages(productId, files, onProgress) {
   const uploadedUrls = [];
 
-  for (const file of files) {
+  for (const [index, file] of files.entries()) {
+    onProgress?.({ completed: index, total: files.length, fileName: file.name });
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
     const filePath = `${productId}/${crypto.randomUUID()}-${safeName}`;
     const { error } = await supabase.storage.from(imageBucket).upload(filePath, file, {
@@ -62,6 +109,7 @@ export async function uploadProductImages(productId, files) {
     if (error) throw error;
 
     uploadedUrls.push(supabase.storage.from(imageBucket).getPublicUrl(filePath).data.publicUrl);
+    onProgress?.({ completed: index + 1, total: files.length, fileName: "" });
   }
 
   return uploadedUrls;

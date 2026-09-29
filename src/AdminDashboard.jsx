@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "./lib/supabase.js";
 import {
   createCatalogSection,
   deleteProduct,
+  deleteCatalogSection,
   getAdminProducts,
   getAdminSections,
+  getStoreLogo,
   migrateLegacyProductImages,
+  renameCatalogSection,
+  saveCatalogSectionOrder,
   saveProduct,
+  updateStoreLogo,
   uploadProductImages,
 } from "./services/admin.js";
 
@@ -47,6 +52,7 @@ function AdminLogin({ onSignedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null);
   const [error, setError] = useState("");
 
   async function submit(event) {
@@ -79,19 +85,16 @@ function AdminLogin({ onSignedIn }) {
 function ProductEditor({ product, sections, onCancel, onSave }) {
   const [form, setForm] = useState(product);
   const [imageItems, setImageItems] = useState(() => product.images.map((url, index) => ({ id: `existing-${index}`, url })));
-  const [filePreviews, setFilePreviews] = useState({});
+  const previewUrls = useRef(new Set());
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const isEditing = Boolean(product.id);
 
-  useEffect(() => {
-    const previews = imageItems
-      .filter((item) => item.file)
-      .map((item) => [item.id, URL.createObjectURL(item.file)]);
-    setFilePreviews(Object.fromEntries(previews));
-    return () => previews.forEach(([, url]) => URL.revokeObjectURL(url));
-  }, [imageItems]);
+  useEffect(() => () => {
+    previewUrls.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrls.current.clear();
+  }, []);
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -122,16 +125,25 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
     setBusy(true);
     setError("");
     setNotice("");
+    setUploadProgress({ message: "Preparing product save...", percent: 3 });
 
     try {
       const id = form.id || slugify(form.title);
       if (!id) throw new Error("Add a product title to create its product ID.");
       const queuedFiles = imageItems.filter((item) => item.file);
       const uploaded = queuedFiles.length
-        ? await uploadProductImages(id, queuedFiles.map((item) => item.file))
+        ? await uploadProductImages(id, queuedFiles.map((item) => item.file), ({ completed, total, fileName }) => {
+          const percent = Math.round(5 + (completed / total) * 80);
+          setUploadProgress({
+            message: fileName ? `Uploading photo ${completed + 1} of ${total}` : `Uploaded ${completed} of ${total} photos`,
+            currentFile: fileName,
+            percent,
+          });
+        })
         : [];
       let uploadedIndex = 0;
       const images = imageItems.map((item) => item.file ? uploaded[uploadedIndex++] : item.url);
+      setUploadProgress({ message: "Saving product details...", percent: 92 });
       await saveProduct({
         ...form,
         id,
@@ -140,8 +152,10 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
         images,
         displayOrder: Number(form.displayOrder) || 0,
       });
+      setUploadProgress({ message: "Product saved", percent: 100 });
       await onSave();
     } catch (saveError) {
+      setUploadProgress(null);
       setError(saveError.message || "The product could not be saved.");
     } finally {
       setBusy(false);
@@ -212,7 +226,11 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
         <label>Previous price<input value={form.oldPrice} onChange={(event) => update("oldPrice", event.target.value)} placeholder="₹664" /></label>
         <label className="admin-span-two">WhatsApp order message<input value={form.defaultWhatsappMsg} onChange={(event) => update("defaultWhatsappMsg", event.target.value)} required /></label>
         <label className="admin-span-two">Product photos<input type="file" accept="image/*" multiple onChange={(event) => {
-          const selected = Array.from(event.target.files ?? []).map((file) => ({ id: crypto.randomUUID(), file }));
+          const selected = Array.from(event.target.files ?? []).map((file) => {
+            const previewUrl = URL.createObjectURL(file);
+            previewUrls.current.add(previewUrl);
+            return { id: crypto.randomUUID(), file, previewUrl };
+          });
           setImageItems((current) => [...current, ...selected]);
           event.target.value = "";
         }} /><span className="admin-field-hint">Select multiple photos at once, or add more before saving.</span></label>
@@ -226,12 +244,18 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
           <div className="admin-image-list admin-span-two" aria-label="Product photo order">
             {imageItems.map((item, index) => (
               <div className="admin-image-item" key={item.id}>
-                <img src={item.file ? filePreviews[item.id] : item.url} alt={`${form.title} photo ${index + 1}`} />
+                <img src={item.previewUrl || item.url} alt={`${form.title} photo ${index + 1}`} />
                 <span className="admin-image-order">Photo {index + 1}{item.file ? " · New" : ""}</span>
                 <div className="admin-image-actions">
                   <button className="admin-secondary-button" type="button" title="Move earlier" aria-label={`Move photo ${index + 1} earlier`} disabled={index === 0} onClick={() => moveImage(index, -1)}>↑</button>
                   <button className="admin-secondary-button" type="button" title="Move later" aria-label={`Move photo ${index + 1} later`} disabled={index === imageItems.length - 1} onClick={() => moveImage(index, 1)}>↓</button>
-                  <button className="admin-remove-image-button" type="button" aria-label={`Remove photo ${index + 1}`} onClick={() => setImageItems((current) => current.filter((_, imageIndex) => imageIndex !== index))}>Remove</button>
+                  <button className="admin-remove-image-button" type="button" aria-label={`Remove photo ${index + 1}`} onClick={() => {
+                    setImageItems((current) => current.filter((_, imageIndex) => imageIndex !== index));
+                    if (item.previewUrl) {
+                      URL.revokeObjectURL(item.previewUrl);
+                      previewUrls.current.delete(item.previewUrl);
+                    }
+                  }}>Remove</button>
                 </div>
               </div>
             ))}
@@ -241,6 +265,15 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
       </div>
       {error && <p className="admin-error" role="alert">{error}</p>}
       {notice && <p className="admin-success" role="status">{notice}</p>}
+      {uploadProgress && (
+        <div className="admin-upload-progress" role="status" aria-live="polite">
+          <div className="admin-upload-progress-label"><span>{uploadProgress.message}</span><span>{uploadProgress.percent}%</span></div>
+          <div className="admin-upload-progress-track" role="progressbar" aria-label="Product save progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={uploadProgress.percent}>
+            <div className="admin-upload-progress-fill" style={{ width: `${uploadProgress.percent}%` }} />
+          </div>
+          {uploadProgress.currentFile && <p className="admin-field-hint">{uploadProgress.currentFile}</p>}
+        </div>
+      )}
       <div className="admin-form-actions">
         <button className="admin-primary-button" type="submit" disabled={busy}>{busy ? "Saving product..." : "Save product"}</button>
         <button className="admin-secondary-button" type="button" onClick={onCancel}>Cancel</button>
@@ -252,19 +285,27 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
 function ProductManager({ session }) {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
+  const [storeLogo, setStoreLogo] = useState("");
+  const [logoFile, setLogoFile] = useState(null);
+  const [savingLogo, setSavingLogo] = useState(false);
+  const [logoNotice, setLogoNotice] = useState("");
   const [editorProduct, setEditorProduct] = useState(null);
   const [addingSection, setAddingSection] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [creatingSection, setCreatingSection] = useState(false);
+  const [savingSectionOrder, setSavingSectionOrder] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState("");
+  const [editingSectionTitle, setEditingSectionTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   async function refreshProducts() {
     setError("");
     try {
-      const [nextProducts, nextSections] = await Promise.all([getAdminProducts(), getAdminSections()]);
+      const [nextProducts, nextSections, nextLogo] = await Promise.all([getAdminProducts(), getAdminSections(), getStoreLogo()]);
       setProducts(nextProducts);
       setSections(nextSections);
+      setStoreLogo(nextLogo);
     } catch (loadError) {
       setError(loadError.message || "Products could not be loaded.");
     } finally {
@@ -294,6 +335,82 @@ function ProductManager({ session }) {
       setError(createError.message || "The section could not be created.");
     } finally {
       setCreatingSection(false);
+    }
+  }
+
+  async function moveSection(index, direction) {
+    const target = index + direction;
+    if (target < 0 || target >= sections.length || savingSectionOrder) return;
+
+    const nextSections = [...sections];
+    const [section] = nextSections.splice(index, 1);
+    nextSections.splice(target, 0, section);
+    setSections(nextSections);
+    setSavingSectionOrder(true);
+    setError("");
+    try {
+      await saveCatalogSectionOrder(nextSections);
+    } catch (orderError) {
+      setError(orderError.message || "The storefront section order could not be saved.");
+      await refreshProducts();
+    } finally {
+      setSavingSectionOrder(false);
+    }
+  }
+
+  async function saveSectionTitle(event, section) {
+    event.preventDefault();
+    const title = editingSectionTitle.trim();
+    if (!title) {
+      setError("Section name cannot be empty.");
+      return;
+    }
+
+    setError("");
+    try {
+      await renameCatalogSection(section.id, title);
+      setSections(await getAdminSections());
+      setEditingSectionId("");
+      setEditingSectionTitle("");
+    } catch (renameError) {
+      setError(renameError.message || "The section name could not be saved.");
+    }
+  }
+
+  async function removeSection(section) {
+    if (products.some((product) => product.sectionId === section.id)) {
+      setError("Move or delete this section's products before deleting the section.");
+      return;
+    }
+    if (!window.confirm(`Delete the ${section.title} section? This cannot be undone.`)) return;
+
+    setError("");
+    try {
+      await deleteCatalogSection(section.id);
+      setSections(await getAdminSections());
+    } catch (deleteError) {
+      setError(deleteError.message || "The section could not be deleted.");
+    }
+  }
+
+  async function saveLogo(event) {
+    event.preventDefault();
+    if (!logoFile) {
+      setError("Choose a logo image first.");
+      return;
+    }
+
+    setSavingLogo(true);
+    setError("");
+    setLogoNotice("");
+    try {
+      setStoreLogo(await updateStoreLogo(logoFile));
+      setLogoFile(null);
+      setLogoNotice("Store logo saved.");
+    } catch (logoError) {
+      setError(logoError.message || "The store logo could not be saved.");
+    } finally {
+      setSavingLogo(false);
     }
   }
 
@@ -343,6 +460,40 @@ function ProductManager({ session }) {
                 <button className="admin-primary-button" type="submit" disabled={creatingSection}>{creatingSection ? "Creating..." : "Create section"}</button>
                 <button className="admin-secondary-button" type="button" onClick={() => setAddingSection(false)}>Cancel</button>
               </form>
+            )}
+            <form className="admin-store-logo" onSubmit={saveLogo}>
+              <img src={storeLogo || "/images/logo.png"} alt="Current store logo" />
+              <label>Store logo<input type="file" accept="image/*" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} /></label>
+              <button className="admin-primary-button" type="submit" disabled={savingLogo || !logoFile}>{savingLogo ? "Uploading logo..." : "Save logo"}</button>
+              {logoNotice && <span className="admin-success" role="status">{logoNotice}</span>}
+            </form>
+            {sections.length > 0 && (
+              <section className="admin-section-order" aria-labelledby="admin-section-order-title">
+                <h2 id="admin-section-order-title">Storefront section order</h2>
+                <ol>
+                  {sections.map((section, index) => (
+                    <li key={section.id}>
+                      {editingSectionId === section.id ? (
+                        <form className="admin-section-rename" onSubmit={(event) => saveSectionTitle(event, section)}>
+                          <input aria-label={`Rename ${section.title}`} value={editingSectionTitle} onChange={(event) => setEditingSectionTitle(event.target.value)} required />
+                          <button className="admin-primary-button" type="submit">Save</button>
+                          <button className="admin-secondary-button" type="button" onClick={() => setEditingSectionId("")}>Cancel</button>
+                        </form>
+                      ) : (
+                        <>
+                          <span className="admin-section-order-name"><strong>{section.title}</strong><small>{section.id}</small></span>
+                          <span className="admin-section-order-actions">
+                            <button className="admin-secondary-button" type="button" title="Move section earlier" aria-label={`Move ${section.title} earlier`} disabled={savingSectionOrder || index === 0} onClick={() => moveSection(index, -1)}>↑</button>
+                            <button className="admin-secondary-button" type="button" title="Move section later" aria-label={`Move ${section.title} later`} disabled={savingSectionOrder || index === sections.length - 1} onClick={() => moveSection(index, 1)}>↓</button>
+                            <button className="admin-secondary-button" type="button" onClick={() => { setEditingSectionId(section.id); setEditingSectionTitle(section.title); }}>Rename</button>
+                            <button className="admin-delete-button" type="button" disabled={products.some((product) => product.sectionId === section.id)} title={products.some((product) => product.sectionId === section.id) ? "Move or delete assigned products first" : "Delete section"} onClick={() => removeSection(section)}>Delete</button>
+                          </span>
+                        </>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
             {error && <p className="admin-error" role="alert">{error}</p>}
             {loading ? <p className="admin-muted">Loading products...</p> : (
