@@ -8,14 +8,23 @@ Petify's product catalog is a React + Vite web app. Product data can come from S
 2. Run `npm install`.
 3. Run `npm run dev` and open the URL Vite prints.
 
-## Connect Supabase
+## Connect Supabase and enable `/ #admin`
 
 1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL Editor, then run `supabase/seed.sql`.
-3. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the project's API settings.
-4. Restart Vite. The catalog service reads active products from `public.products`.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor, then run `supabase/seed.sql` to insert the current catalog.
+3. Run `supabase/admin.sql` to create the admin role, product write policies, and public image bucket.
+4. In Supabase Authentication, create your account. Do not enable public sign-ups.
+5. In Authentication → Users, copy your account's UUID. In the SQL Editor, assign that account admin access:
 
-Only the public anon key belongs in this frontend. Never put a service-role key in a `VITE_` variable. Product reads are public through row-level security; writes should later be done through an authenticated admin flow or trusted server function.
+   ```sql
+   insert into public.admin_users (user_id)
+   values ('YOUR_AUTH_USER_UUID');
+   ```
+
+6. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the project's API settings. Restart Vite.
+7. Visit `/#admin`, sign in with the account you created, and manage products. Product photos upload to the `product-images` Storage bucket.
+
+Only the public anon key belongs in this frontend. Never put a service-role key in a `VITE_` variable. Visitors can read active products; database and Storage writes require the assigned admin role.
 
 ## Future mobile app
 

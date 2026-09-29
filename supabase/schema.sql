@@ -18,6 +18,7 @@ create table if not exists public.products (
 
 alter table public.products enable row level security;
 
+drop policy if exists "Published products are readable by everyone" on public.products;
 create policy "Published products are readable by everyone"
   on public.products for select
   to anon, authenticated

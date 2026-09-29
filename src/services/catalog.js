@@ -33,8 +33,8 @@ export async function getCatalog() {
   }
 
   return {
-    products: data.length ? data.map(mapProduct) : siteData.products,
-    source: data.length ? "supabase" : "local",
+    products: data.map(mapProduct),
+    source: "supabase",
     error: null,
   };
 }

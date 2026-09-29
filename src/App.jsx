@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AdminDashboard from "./AdminDashboard.jsx";
 import { siteData } from "./data/catalog.js";
 import { getCatalog } from "./services/catalog.js";
 
@@ -57,7 +58,16 @@ function ProductCard({ product, combo = false }) {
         <p>{product.description}</p>
         {!combo && product.specs?.length > 0 && (
           <ul className="specs">
-            {product.specs.map((spec) => <li key={spec} dangerouslySetInnerHTML={{ __html: spec }} />)}
+            {product.specs.map((spec) => {
+              const labelEnd = spec.indexOf("</strong>");
+              const hasLabel = spec.startsWith("<strong>") && labelEnd !== -1;
+
+              return (
+                <li key={spec}>
+                  {hasLabel ? <><strong>{spec.slice(8, labelEnd)}</strong>{spec.slice(labelEnd + 9)}</> : spec}
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -75,6 +85,20 @@ function ProductCard({ product, combo = false }) {
 export default function App() {
   const [products, setProducts] = useState(siteData.products);
   const [catalogError, setCatalogError] = useState(false);
+  const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === "#admin");
+  const [showScrollTop, setShowScrollTop] = useState(window.scrollY > 320);
+
+  useEffect(() => {
+    const updateRoute = () => setIsAdminRoute(window.location.hash === "#admin");
+    window.addEventListener("hashchange", updateRoute);
+    return () => window.removeEventListener("hashchange", updateRoute);
+  }, []);
+
+  useEffect(() => {
+    const updateScrollPosition = () => setShowScrollTop(window.scrollY > 320);
+    window.addEventListener("scroll", updateScrollPosition, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollPosition);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -86,6 +110,8 @@ export default function App() {
     return () => { active = false; };
   }, []);
 
+  if (isAdminRoute) return <AdminDashboard />;
+
   const singles = products.filter((product) => product.type === "single");
   const combos = products.filter((product) => product.type === "combo");
 
@@ -93,7 +119,7 @@ export default function App() {
     <>
       <header>
         <h1 className="brand-title">
-          <a href="#top" id="logo-link" title="Scroll to top">
+          <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}>
             <img src={siteData.header.logoUrl} alt={`${siteData.header.title} logo`} className="brand-logo" />
           </a>
         </h1>
@@ -139,7 +165,25 @@ export default function App() {
           <p>Email: <a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email}</a></p>
         </div>
         <p className="footer-legal">© Petify Group. All rights reserved.<br />*Not for human consumption. Store in a cool, dry place.</p>
+        <a className="admin-entry-link" href="/#admin">Admin</a>
       </footer>
+      {showScrollTop && (
+        <button
+          className="back-to-top"
+          type="button"
+          aria-label="Go to top"
+          title="Go to top"
+          onClick={() => {
+            if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              window.scrollTo(0, 0);
+            } else {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        >
+          <span aria-hidden="true">↑</span>
+        </button>
+      )}
     </>
   );
 }
