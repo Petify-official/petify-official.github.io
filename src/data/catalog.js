@@ -1,32 +1,15 @@
-/**
- * PETIFY PRODUCT DATA
- * -------------------
- * This is the ONLY file you need to edit to add/change products.
- *
- * TO ADD A NEW PRODUCT:
- *   1. Copy any object inside `products` below (a "single" one or a "combo" one).
- *   2. Give it a unique `id` (lowercase, no spaces — this is also its image folder name).
- *   3. Put the product's photos in:  images/products/<id>/1.jpg  (2.jpg, 3.jpg, ... if you have more)
- *   4. List those paths in the `images` array, in the order you want them shown.
- *      - 1 image? Just put one path in the array — no thumbnails will show.
- *      - No images yet? Leave the array empty ([]) — a placeholder box will show instead.
- *   5. Set `type` to "single" or "combo" — that alone decides which section it appears in.
- *
- * Nothing else (script.js, styles.css, index.html) needs to change when you add a product.
- */
-
-const petifyData = {
+export const siteData = {
   header: {
     title: "Pëtify",
-    logoUrl: "images/logo.png",
+    logoUrl: "/images/logo.png",
     tagline: "Pure love, premium care",
     pills: [
-      "All India Delivery Available", 
+      "All India Delivery Available",
       "Exotic Pets & Birds",
       "Ornamental Fish Food",
       "Cages & Enclosures",
-      "Premium Accessories"
-    ]
+      "Premium Accessories",
+    ],
   },
   contact: {
     whatsappNumber: "919745001101",
@@ -34,9 +17,7 @@ const petifyData = {
     email: "petify.shopping@gmail.com",
     location: "Kerala, India",
   },
-
   products: [
-    // ---------- SINGLE PRODUCTS ----------
     {
       id: "shrimp",
       type: "single",
@@ -46,14 +27,14 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 55%",
         "<strong>Sizes:</strong> 35g, 50g, 100g",
-        "<strong>Features:</strong> No added preservatives, natural color booster."
+        "<strong>Features:</strong> No added preservatives, natural color booster.",
       ],
       images: [
-        "images/products/shrimp/1.jpg",
-        "images/products/shrimp/2.jpg",
-        "images/products/shrimp/3.jpg"
+        "/images/products/shrimp/1.jpg",
+        "/images/products/shrimp/2.jpg",
+        "/images/products/shrimp/3.jpg",
       ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Freeze Dried Shrimp"
+      defaultWhatsappMsg: "Hi Petify, I want to order Freeze Dried Shrimp",
     },
     {
       id: "channa",
@@ -64,12 +45,10 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 45%",
         "<strong>Net Wt:</strong> 125g",
-        "<strong>Features:</strong> Omega-3 rich, boosts immunity, enhances natural pattern & color."
+        "<strong>Features:</strong> Omega-3 rich, boosts immunity, enhances natural pattern & color.",
       ],
-      images: [
-        "images/products/channa/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Channa Stick 125g"
+      images: ["/images/products/channa/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Channa Stick 125g",
     },
     {
       id: "arowana",
@@ -80,12 +59,10 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 45%",
         "<strong>Net Wt:</strong> 125g",
-        "<strong>Features:</strong> Fortified with vitamins & minerals for disease resistance."
+        "<strong>Features:</strong> Fortified with vitamins & minerals for disease resistance.",
       ],
-      images: [
-        "images/products/arowana/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Arowana Stick 125g"
+      images: ["/images/products/arowana/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Arowana Stick 125g",
     },
     {
       id: "artemia-stick",
@@ -96,12 +73,10 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 48%",
         "<strong>Net Wt:</strong> 150g",
-        "<strong>Features:</strong> Easy to digest, natural color booster, immune support."
+        "<strong>Features:</strong> Easy to digest, natural color booster, immune support.",
       ],
-      images: [
-        "images/products/artemia-stick/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Artemia Stick 150g"
+      images: ["/images/products/artemia-stick/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Artemia Stick 150g",
     },
     {
       id: "blood-worm-stick",
@@ -112,12 +87,10 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 40%",
         "<strong>Net Wt:</strong> 150g",
-        "<strong>Features:</strong> Soft texture, easy to digest, clean water formula."
+        "<strong>Features:</strong> Soft texture, easy to digest, clean water formula.",
       ],
-      images: [
-        "images/products/blood-worm-stick/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Blood Worm Stick 150g"
+      images: ["/images/products/blood-worm-stick/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Blood Worm Stick 150g",
     },
     {
       id: "krill-pellets",
@@ -128,15 +101,11 @@ const petifyData = {
       specs: [
         "<strong>Protein:</strong> Min 48%",
         "<strong>Net Wt:</strong> 150g",
-        "<strong>Features:</strong> Astaxanthin 100 ppm, enhances color, supports muscle growth."
+        "<strong>Features:</strong> Astaxanthin 100 ppm, enhances color, supports muscle growth.",
       ],
-      images: [
-        "images/products/krill-pellets/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Krill Pellets 150g"
+      images: ["/images/products/krill-pellets/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Krill Pellets 150g",
     },
-
-    // ---------- COMBO PRODUCTS ----------
     {
       id: "combo-1",
       type: "combo",
@@ -146,10 +115,8 @@ const petifyData = {
       description: "Channa Stick 125g + Freeze Dried Shrimp 35g",
       price: "₹599",
       oldPrice: "₹664",
-      images: [
-        "images/products/combo-1/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹599"
+      images: ["/images/products/combo-1/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹599",
     },
     {
       id: "combo-2",
@@ -160,10 +127,8 @@ const petifyData = {
       description: "Channa Stick 125g + Freeze Dried Shrimp 50g",
       price: "₹699",
       oldPrice: "₹778",
-      images: [
-        "images/products/combo-2/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹699"
+      images: ["/images/products/combo-2/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹699",
     },
     {
       id: "combo-3",
@@ -174,29 +139,26 @@ const petifyData = {
       description: "Channa Stick 125g + Freeze Dried Shrimp 100g",
       price: "₹899",
       oldPrice: "₹998",
-      images: [
-        "images/products/combo-3/1.jpg"
-      ],
-      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹899"
-    }
+      images: ["/images/products/combo-3/1.jpg"],
+      defaultWhatsappMsg: "Hi Petify, I want to order Combo ₹899",
+    },
   ],
-
   features: [
     {
       title: "Exotic Pets & Birds",
-      description: "Healthy, hand-reared birds, small pets, and expert care guidance."
+      description: "Healthy, hand-reared birds, small pets, and expert care guidance.",
     },
     {
       title: "Fish & Specialty Foods",
-      description: "High-protein nutritional feeds for Channa, Arowana, Discus & more."
+      description: "High-protein nutritional feeds for Channa, Arowana, Discus & more.",
     },
     {
       title: "Cages & Housing",
-      description: "Durable, comfortable enclosures tailored for birds and small pets."
+      description: "Durable, comfortable enclosures tailored for birds and small pets.",
     },
     {
       title: "Pet Care Accessories",
-      description: "Essential toys, grooming supplies, and everyday care essentials."
-    }
-  ]
+      description: "Essential toys, grooming supplies, and everyday care essentials.",
+    },
+  ],
 };

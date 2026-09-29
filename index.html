@@ -10,49 +10,10 @@
     <!-- Mobile Home Screen / Bookmark Icon (Apple Devices) -->
     <link rel="apple-touch-icon" href="images/logo.png">
     
-    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" content="#102a43">
 </head>
 <body>
-
-    <!-- Header / Hero Section -->
-    <header>
-        <h1 class="brand-title" id="brand-title"></h1>
-        <p class="brand-tagline" id="brand-tagline"></p>
-        <div class="hero-pills" id="hero-pills"></div>
-    </header>
-
-    <div class="container">
-        <!-- Standalone Products -->
-        <h2 class="section-title">Single Products</h2>
-        <div class="grid" id="single-products-grid"></div>
-
-        <!-- Special Combos -->
-        <h2 class="section-title">Special Combo Offers</h2>
-        <div class="grid" id="combo-products-grid"></div>
-
-<h2 class="section-title glow-text" aria-label="Something big is coming soon">
-    <span class="status-dot" aria-hidden="true"></span>
-    <span id="typing-headline" aria-hidden="true"></span>
-</h2>
-        <!-- Features Bar -->
-        <div class="features-grid" id="features-grid"></div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <h3>Petify Group</h3>
-        <p id="footer-location" style="font-size:0.9rem; opacity:0.8;"></p>
-        
-        <div class="contact-details" id="footer-contact"></div>
-
-        <p style="font-size: 0.75rem; opacity: 0.6; margin-top: 1.5rem;">
-            © Petify Group. All rights reserved. <br>
-            *Not for human consumption. Store in a cool, dry place.
-        </p>
-    </footer>
-
-    <!-- Load Data and Application Logic -->
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
