@@ -5,6 +5,7 @@ function mapProduct(row) {
   return {
     id: row.id,
     type: row.type,
+    sectionId: row.section_id,
     badge: row.badge,
     title: row.title,
     description: row.description,
@@ -19,21 +20,34 @@ function mapProduct(row) {
 
 export async function getCatalog() {
   if (!supabase) {
-    return { products: siteData.products, source: "local", error: null };
+    return { products: siteData.products, sections: siteData.sections, source: "local", error: null };
   }
 
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("is_active", true)
-    .order("display_order", { ascending: true });
+  const [productsResult, sectionsResult] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true }),
+    supabase
+      .from("catalog_sections")
+      .select("id, title, display_order")
+      .eq("is_active", true)
+      .order("display_order", { ascending: true }),
+  ]);
 
-  if (error) {
-    return { products: siteData.products, source: "local", error };
+  if (productsResult.error || sectionsResult.error) {
+    return {
+      products: siteData.products,
+      sections: siteData.sections,
+      source: "local",
+      error: productsResult.error || sectionsResult.error,
+    };
   }
 
   return {
-    products: data.map(mapProduct),
+    products: productsResult.data.map(mapProduct),
+    sections: sectionsResult.data,
     source: "supabase",
     error: null,
   };

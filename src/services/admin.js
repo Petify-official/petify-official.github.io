@@ -12,6 +12,7 @@ export async function getAdminProducts() {
   return data.map((row) => ({
     id: row.id,
     type: row.type,
+    sectionId: row.section_id,
     badge: row.badge,
     title: row.title,
     description: row.description,
@@ -26,6 +27,25 @@ export async function getAdminProducts() {
   }));
 }
 
+export async function getAdminSections() {
+  const { data, error } = await supabase
+    .from("catalog_sections")
+    .select("*")
+    .order("display_order", { ascending: true });
+  if (error) throw error;
+
+  return data;
+}
+
+export async function createCatalogSection(section) {
+  const { error } = await supabase.from("catalog_sections").insert({
+    id: section.id,
+    title: section.title,
+    display_order: section.displayOrder,
+  });
+  if (error) throw error;
+}
+
 export async function uploadProductImages(productId, files) {
   const uploadedUrls = [];
 
@@ -36,6 +56,9 @@ export async function uploadProductImages(productId, files) {
       contentType: file.type,
       upsert: false,
     });
+    if (error?.message === "Bucket not found") {
+      throw new Error(`The Supabase Storage bucket "${imageBucket}" is missing. Run supabase/admin.sql in the Supabase SQL Editor, then try again.`);
+    }
     if (error) throw error;
 
     uploadedUrls.push(supabase.storage.from(imageBucket).getPublicUrl(filePath).data.publicUrl);
@@ -44,18 +67,41 @@ export async function uploadProductImages(productId, files) {
   return uploadedUrls;
 }
 
+export async function migrateLegacyProductImages(productId, images) {
+  const replacements = new Map();
+
+  for (const image of images) {
+    if (!image.startsWith("/images/") || replacements.has(image)) continue;
+
+    const response = await fetch(image);
+    if (!response.ok) throw new Error(`Could not load the current photo ${image} (${response.status}).`);
+
+    const blob = await response.blob();
+    const filename = image.split("/").pop() || "product-image";
+    const file = new File([blob], filename, { type: blob.type || "application/octet-stream" });
+    const [uploadedUrl] = await uploadProductImages(productId, [file]);
+    replacements.set(image, uploadedUrl);
+  }
+
+  return {
+    images: images.map((image) => replacements.get(image) || image),
+    migratedCount: replacements.size,
+  };
+}
+
 export async function saveProduct(product) {
   const row = {
     id: product.id,
     type: product.type,
+    section_id: product.sectionId,
     badge: product.badge,
     title: product.title,
     description: product.description,
     specs: product.specs,
     images: product.images,
     save_tag: product.type === "combo" ? product.saveTag : null,
-    price: product.type === "combo" ? product.price : null,
-    old_price: product.type === "combo" ? product.oldPrice : null,
+    price: product.price || null,
+    old_price: product.oldPrice || null,
     default_whatsapp_msg: product.defaultWhatsappMsg,
     is_active: product.isActive,
     display_order: product.displayOrder,

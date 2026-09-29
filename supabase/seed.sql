@@ -22,3 +22,10 @@ on conflict (id) do update set
   old_price = excluded.old_price,
   default_whatsapp_msg = excluded.default_whatsapp_msg,
   display_order = excluded.display_order;
+
+update public.products
+set section_id = case when type = 'combo' then 'combos' else 'singles' end
+where id in (
+  'shrimp', 'channa', 'arowana', 'artemia-stick', 'blood-worm-stick', 'krill-pellets',
+  'combo-1', 'combo-2', 'combo-3'
+);

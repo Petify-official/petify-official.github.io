@@ -17,10 +17,15 @@ export const siteData = {
     email: "petify.shopping@gmail.com",
     location: "Kerala, India",
   },
+  sections: [
+    { id: "singles", title: "Single Products", displayOrder: 1 },
+    { id: "combos", title: "Special Combo Offers", displayOrder: 2 },
+  ],
   products: [
     {
       id: "shrimp",
       type: "single",
+      sectionId: "singles",
       badge: "Treat",
       title: "Freeze Dried Shrimp",
       description: "Natural & protein-rich nutritional treat ideal for Discus, Arowana, Cichlids, Flowerhorn, Oscar, Snakehead, and other carnivorous fish.",
@@ -39,6 +44,7 @@ export const siteData = {
     {
       id: "channa",
       type: "single",
+      sectionId: "singles",
       badge: "Specialized Feed",
       title: "Channa Stick (125g)",
       description: "Premium protein-rich fish food formulated specifically for Snakehead (Channa spp.) and carnivorous fish.",
@@ -53,6 +59,7 @@ export const siteData = {
     {
       id: "arowana",
       type: "single",
+      sectionId: "singles",
       badge: "Premium Feed",
       title: "Arowana Stick (125g)",
       description: "Specially formulated for Arowana and large top/mid-water predators for healthy growth and vitality.",
@@ -67,6 +74,7 @@ export const siteData = {
     {
       id: "artemia-stick",
       type: "single",
+      sectionId: "singles",
       badge: "Premium Feed",
       title: "Artemia Stick (150g)",
       description: "Natural source of protein from Artemia designed to enhance growth, color, and immunity for Discus, Arowana, Cichlids, Flowerhorn, Oscar, Snakehead, and other ornamental fish.",
@@ -81,6 +89,7 @@ export const siteData = {
     {
       id: "blood-worm-stick",
       type: "single",
+      sectionId: "singles",
       badge: "Premium Feed",
       title: "Blood Worm Stick (150g)",
       description: "Highly nutritious feed made with natural blood worm, rich in protein and carotenoids to boost immunity, growth, and natural colors.",
@@ -95,6 +104,7 @@ export const siteData = {
     {
       id: "krill-pellets",
       type: "single",
+      sectionId: "singles",
       badge: "Premium Feed",
       title: "Krill Pellets (150g)",
       description: "High-quality marine protein source enriched with Antarctic Krill Meal, Omega-3 fatty acids, and natural Astaxanthin for vibrant color and vitality.",
@@ -109,6 +119,7 @@ export const siteData = {
     {
       id: "combo-1",
       type: "combo",
+      sectionId: "combos",
       saveTag: "SAVE ₹65",
       badge: "Starter Combo",
       title: "Channa Stick + Shrimp 35g",
@@ -121,6 +132,7 @@ export const siteData = {
     {
       id: "combo-2",
       type: "combo",
+      sectionId: "combos",
       saveTag: "SAVE ₹79",
       badge: "Popular Combo",
       title: "Channa Stick + Shrimp 50g",
@@ -133,6 +145,7 @@ export const siteData = {
     {
       id: "combo-3",
       type: "combo",
+      sectionId: "combos",
       saveTag: "SAVE ₹99",
       badge: "Value Combo",
       title: "Channa Stick + Shrimp 100g",

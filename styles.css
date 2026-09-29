@@ -406,30 +406,29 @@ footer a {
   background: #f8fafc;
 }
 
-.admin-login {
+  width: 152px;
   width: min(100%, 430px);
-  min-height: auto;
-  margin: 8vh auto;
-  padding: 2.25rem;
-  border: 1px solid #dbe3ea;
-  border-radius: 8px;
-  background: white;
-  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
-}
+  .admin-login {
+    width: min(100%, 430px);
+    min-height: auto;
+    margin: 8vh auto;
+    padding: 2.25rem;
+    border: 1px solid #dbe3ea;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+  }
 
-.admin-gate > div {
-  max-width: 620px;
-  padding: 2rem;
-  border-left: 4px solid var(--accent);
-  background: white;
-}
+  .admin-gate > div {
+    max-width: 620px;
+    padding: 2rem;
+    border-left: 4px solid var(--accent);
+    background: white;
+  }
 
-.admin-gate h1,
-.admin-login h1,
-.admin-page-heading h1,
-.admin-editor h2 {
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
+  .admin-gate h1,
+  .admin-login h1,
+  .admin-page-heading h1,
   font-size: 1.8rem;
   line-height: 1.2;
 }
@@ -542,6 +541,12 @@ footer a {
   font-size: 0.9rem;
 }
 
+.admin-success {
+  margin: 0.9rem 0;
+  color: #15803d;
+  font-size: 0.9rem;
+}
+
 .admin-user-id {
   display: block;
   margin-top: 1rem;
@@ -624,6 +629,45 @@ footer a {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+}
+
+.admin-heading-actions,
+.admin-section-form {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-section-form {
+  max-width: 720px;
+  margin: -0.4rem 0 1.5rem;
+  align-items: flex-end;
+}
+
+.admin-section-form label {
+  flex: 1;
+  display: grid;
+  gap: 0.4rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.admin-section-form input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+  color: var(--text-dark);
+  font: inherit;
+  font-weight: 400;
+}
+
+.admin-section-form input:focus {
+  outline: 2px solid #93c5fd;
+  border-color: var(--primary);
 }
 
 .admin-table-wrap {
@@ -830,6 +874,16 @@ footer a {
   .admin-page-heading,
   .admin-editor-heading {
     align-items: flex-start;
+  }
+
+  .admin-page-heading,
+  .admin-heading-actions,
+  .admin-section-form {
+    flex-wrap: wrap;
+  }
+
+  .admin-section-form label {
+    flex-basis: 100%;
   }
 
   .admin-form-grid {

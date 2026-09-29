@@ -71,10 +71,10 @@ function ProductCard({ product, combo = false }) {
           </ul>
         )}
       </div>
-      {combo && (
+      {product.price && (
         <div className="price-box">
           <span className="price">{product.price}</span>
-          <span className="old-price">{product.oldPrice}</span>
+          {product.oldPrice && <span className="old-price">{product.oldPrice}</span>}
         </div>
       )}
       <OrderLink product={product} combo={combo} />
@@ -84,6 +84,7 @@ function ProductCard({ product, combo = false }) {
 
 export default function App() {
   const [products, setProducts] = useState(siteData.products);
+  const [sections, setSections] = useState(siteData.sections);
   const [catalogError, setCatalogError] = useState(false);
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === "#admin");
   const [showScrollTop, setShowScrollTop] = useState(window.scrollY > 320);
@@ -105,15 +106,13 @@ export default function App() {
     getCatalog().then((catalog) => {
       if (!active) return;
       setProducts(catalog.products);
+      setSections(catalog.sections);
       setCatalogError(Boolean(catalog.error));
     });
     return () => { active = false; };
   }, []);
 
   if (isAdminRoute) return <AdminDashboard />;
-
-  const singles = products.filter((product) => product.type === "single");
-  const combos = products.filter((product) => product.type === "combo");
 
   return (
     <>
@@ -131,18 +130,19 @@ export default function App() {
 
       <main className="container" id="top">
         {catalogError && <p className="catalog-notice" role="status">Catalog service is unavailable. Showing the saved product catalog.</p>}
-        <section aria-labelledby="single-products-title">
-          <h2 className="section-title" id="single-products-title">Single Products</h2>
-          <div className="grid">
-            {singles.map((product) => <ProductCard key={product.id} product={product} />)}
-          </div>
-        </section>
-        <section aria-labelledby="combo-products-title">
-          <h2 className="section-title" id="combo-products-title">Special Combo Offers</h2>
-          <div className="grid">
-            {combos.map((product) => <ProductCard key={product.id} product={product} combo />)}
-          </div>
-        </section>
+        {sections.map((section) => {
+          const sectionProducts = products.filter((product) => product.sectionId === section.id);
+          if (!sectionProducts.length) return null;
+
+          return (
+            <section key={section.id} aria-labelledby={`catalog-section-${section.id}`}>
+              <h2 className="section-title" id={`catalog-section-${section.id}`}>{section.title}</h2>
+              <div className="grid">
+                {sectionProducts.map((product) => <ProductCard key={product.id} product={product} combo={product.type === "combo"} />)}
+              </div>
+            </section>
+          );
+        })}
         <h2 className="section-title glow-text" aria-label="Something big is coming soon">
           <span className="status-dot" aria-hidden="true" />
           <span>Something big is coming soon</span>

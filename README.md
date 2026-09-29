@@ -11,18 +11,20 @@ Petify's product catalog is a React + Vite web app. Product data can come from S
 ## Connect Supabase and enable `/ #admin`
 
 1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL Editor, then run `supabase/seed.sql` to insert the current catalog.
+2. Run `supabase/schema.sql` in the Supabase SQL Editor.
 3. Run `supabase/admin.sql` to create the admin role, product write policies, and public image bucket.
-4. In Supabase Authentication, create your account. Do not enable public sign-ups.
-5. In Authentication → Users, copy your account's UUID. In the SQL Editor, assign that account admin access:
+4. Run `supabase/catalog-sections.sql` to add configurable storefront sections and assign the existing products.
+5. Run `supabase/seed.sql` to insert the current catalog.
+6. In Supabase Authentication, create your account. Do not enable public sign-ups.
+7. In Authentication → Users, copy your account's UUID. In the SQL Editor, assign that account admin access:
 
    ```sql
    insert into public.admin_users (user_id)
    values ('YOUR_AUTH_USER_UUID');
    ```
 
-6. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the project's API settings. Restart Vite.
-7. Visit `/#admin`, sign in with the account you created, and manage products. Product photos upload to the `product-images` Storage bucket.
+8. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the project's API settings. Restart Vite.
+9. Visit `/#admin`, sign in with the account you created, and manage products. Create storefront sections such as Toys or Cages from the Products page. New photos upload to the `product-images` Storage bucket; edit existing products and choose **Move current photos to Supabase Storage** to migrate their current `/images/...` photos.
 
 Only the public anon key belongs in this frontend. Never put a service-role key in a `VITE_` variable. Visitors can read active products; database and Storage writes require the assigned admin role.
 

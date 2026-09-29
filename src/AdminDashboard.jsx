@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "./lib/supabase.js";
-import { deleteProduct, getAdminProducts, saveProduct, uploadProductImages } from "./services/admin.js";
+import {
+  createCatalogSection,
+  deleteProduct,
+  getAdminProducts,
+  getAdminSections,
+  migrateLegacyProductImages,
+  saveProduct,
+  uploadProductImages,
+} from "./services/admin.js";
 
-const blankProduct = (displayOrder) => ({
+const blankProduct = (displayOrder, sections) => ({
   id: "",
   type: "single",
+  sectionId: sections[0]?.id ?? "",
   badge: "Premium Feed",
   title: "",
   description: "",
@@ -67,12 +76,22 @@ function AdminLogin({ onSignedIn }) {
   );
 }
 
-function ProductEditor({ product, onCancel, onSave }) {
+function ProductEditor({ product, sections, onCancel, onSave }) {
   const [form, setForm] = useState(product);
-  const [files, setFiles] = useState([]);
+  const [imageItems, setImageItems] = useState(() => product.images.map((url, index) => ({ id: `existing-${index}`, url })));
+  const [filePreviews, setFilePreviews] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const isEditing = Boolean(product.id);
+
+  useEffect(() => {
+    const previews = imageItems
+      .filter((item) => item.file)
+      .map((item) => [item.id, URL.createObjectURL(item.file)]);
+    setFilePreviews(Object.fromEntries(previews));
+    return () => previews.forEach(([, url]) => URL.revokeObjectURL(url));
+  }, [imageItems]);
 
   function update(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -87,26 +106,75 @@ function ProductEditor({ product, onCancel, onSave }) {
     }));
   }
 
+  function moveImage(index, direction) {
+    setImageItems((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      const [item] = next.splice(index, 1);
+      next.splice(target, 0, item);
+      return next;
+    });
+  }
+
   async function submit(event) {
     event.preventDefault();
     setBusy(true);
     setError("");
+    setNotice("");
 
     try {
       const id = form.id || slugify(form.title);
       if (!id) throw new Error("Add a product title to create its product ID.");
-      const uploaded = files.length ? await uploadProductImages(id, files) : [];
+      const queuedFiles = imageItems.filter((item) => item.file);
+      const uploaded = queuedFiles.length
+        ? await uploadProductImages(id, queuedFiles.map((item) => item.file))
+        : [];
+      let uploadedIndex = 0;
+      const images = imageItems.map((item) => item.file ? uploaded[uploadedIndex++] : item.url);
       await saveProduct({
         ...form,
         id,
         isNew: !isEditing,
         specs: form.specsText.split("\n").map((item) => item.trim()).filter(Boolean),
-        images: [...form.images, ...uploaded],
+        images,
         displayOrder: Number(form.displayOrder) || 0,
       });
       await onSave();
     } catch (saveError) {
       setError(saveError.message || "The product could not be saved.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function moveLegacyImages() {
+    setBusy(true);
+    setError("");
+    setNotice("");
+
+    try {
+      const storedItems = imageItems.filter((item) => item.url);
+      const result = await migrateLegacyProductImages(form.id, storedItems.map((item) => item.url));
+      if (!result.migratedCount) return;
+
+      let storedIndex = 0;
+      const nextItems = imageItems.map((item) => item.file ? item : { ...item, url: result.images[storedIndex++] });
+
+      const product = {
+        ...form,
+        isNew: false,
+        specs: form.specsText.split("\n").map((item) => item.trim()).filter(Boolean),
+        images: nextItems.filter((item) => item.url).map((item) => item.url),
+        displayOrder: Number(form.displayOrder) || 0,
+      };
+      await saveProduct(product);
+      update("images", result.images);
+      setImageItems(nextItems);
+      setNotice(`${result.migratedCount} photo${result.migratedCount === 1 ? "" : "s"} moved to Supabase Storage.`);
+      await onSave({ closeEditor: false });
+    } catch (moveError) {
+      setError(moveError.message || "The current photos could not be moved.");
     } finally {
       setBusy(false);
     }
@@ -122,9 +190,14 @@ function ProductEditor({ product, onCancel, onSave }) {
         <button className="admin-secondary-button" type="button" onClick={onCancel}>Close</button>
       </div>
       <div className="admin-form-grid">
+        <label>Store section
+          <select value={form.sectionId} onChange={(event) => update("sectionId", event.target.value)} required>
+            {sections.map((section) => <option key={section.id} value={section.id}>{section.title}</option>)}
+          </select>
+        </label>
         <label>Product type
           <select value={form.type} onChange={(event) => update("type", event.target.value)}>
-            <option value="single">Single product</option>
+            <option value="single">Standard product</option>
             <option value="combo">Combo offer</option>
           </select>
         </label>
@@ -133,23 +206,33 @@ function ProductEditor({ product, onCancel, onSave }) {
         {isEditing && <label>Product ID<input value={form.id} readOnly /></label>}
         <label>Display order<input type="number" min="0" step="1" value={form.displayOrder} onChange={(event) => update("displayOrder", event.target.value)} /></label>
         <label className="admin-span-two">Description<textarea rows="3" value={form.description} onChange={(event) => update("description", event.target.value)} required /></label>
-        {form.type === "single" ? (
-          <label className="admin-span-two">Product details, one per line<textarea rows="4" value={form.specsText} onChange={(event) => update("specsText", event.target.value)} placeholder={"Protein: Min 45%\nNet weight: 125g"} /></label>
-        ) : (
-          <>
-            <label>Offer tag<input value={form.saveTag} onChange={(event) => update("saveTag", event.target.value)} placeholder="SAVE ₹65" /></label>
-            <label>Price<input value={form.price} onChange={(event) => update("price", event.target.value)} placeholder="₹599" /></label>
-            <label>Previous price<input value={form.oldPrice} onChange={(event) => update("oldPrice", event.target.value)} placeholder="₹664" /></label>
-          </>
-        )}
+        {form.type === "single" && <label className="admin-span-two">Product details, one per line<textarea rows="4" value={form.specsText} onChange={(event) => update("specsText", event.target.value)} placeholder={"Material: Cotton\nSize: Medium"} /></label>}
+        {form.type === "combo" && <label>Offer tag<input value={form.saveTag} onChange={(event) => update("saveTag", event.target.value)} placeholder="SAVE ₹65" /></label>}
+        <label>Price<input value={form.price} onChange={(event) => update("price", event.target.value)} placeholder="₹599" /></label>
+        <label>Previous price<input value={form.oldPrice} onChange={(event) => update("oldPrice", event.target.value)} placeholder="₹664" /></label>
         <label className="admin-span-two">WhatsApp order message<input value={form.defaultWhatsappMsg} onChange={(event) => update("defaultWhatsappMsg", event.target.value)} required /></label>
-        <label className="admin-span-two">Product photos<input type="file" accept="image/*" multiple onChange={(event) => setFiles(Array.from(event.target.files ?? []))} /><span className="admin-field-hint">New photos upload when you save. Existing photos stay unless removed below.</span></label>
-        {form.images.length > 0 && (
-          <div className="admin-image-list admin-span-two">
-            {form.images.map((image, index) => (
-              <div className="admin-image-item" key={`${image}-${index}`}>
-                <img src={image} alt={`${form.title} ${index + 1}`} />
-                <button type="button" aria-label={`Remove photo ${index + 1}`} onClick={() => update("images", form.images.filter((_, imageIndex) => imageIndex !== index))}>Remove</button>
+        <label className="admin-span-two">Product photos<input type="file" accept="image/*" multiple onChange={(event) => {
+          const selected = Array.from(event.target.files ?? []).map((file) => ({ id: crypto.randomUUID(), file }));
+          setImageItems((current) => [...current, ...selected]);
+          event.target.value = "";
+        }} /><span className="admin-field-hint">Select multiple photos at once, or add more before saving.</span></label>
+        {isEditing && imageItems.some((item) => item.url?.startsWith("/images/")) && (
+          <div className="admin-span-two">
+            <button className="admin-secondary-button" type="button" onClick={moveLegacyImages} disabled={busy}>Move current photos to Supabase Storage</button>
+            <span className="admin-field-hint">This replaces the product's local image links after the uploads succeed.</span>
+          </div>
+        )}
+        {imageItems.length > 0 && (
+          <div className="admin-image-list admin-span-two" aria-label="Product photo order">
+            {imageItems.map((item, index) => (
+              <div className="admin-image-item" key={item.id}>
+                <img src={item.file ? filePreviews[item.id] : item.url} alt={`${form.title} photo ${index + 1}`} />
+                <span className="admin-image-order">Photo {index + 1}{item.file ? " · New" : ""}</span>
+                <div className="admin-image-actions">
+                  <button className="admin-secondary-button" type="button" title="Move earlier" aria-label={`Move photo ${index + 1} earlier`} disabled={index === 0} onClick={() => moveImage(index, -1)}>↑</button>
+                  <button className="admin-secondary-button" type="button" title="Move later" aria-label={`Move photo ${index + 1} later`} disabled={index === imageItems.length - 1} onClick={() => moveImage(index, 1)}>↓</button>
+                  <button className="admin-remove-image-button" type="button" aria-label={`Remove photo ${index + 1}`} onClick={() => setImageItems((current) => current.filter((_, imageIndex) => imageIndex !== index))}>Remove</button>
+                </div>
               </div>
             ))}
           </div>
@@ -157,6 +240,7 @@ function ProductEditor({ product, onCancel, onSave }) {
         <label className="admin-checkbox admin-span-two"><input type="checkbox" checked={form.isActive} onChange={(event) => update("isActive", event.target.checked)} /> Visible in the storefront</label>
       </div>
       {error && <p className="admin-error" role="alert">{error}</p>}
+      {notice && <p className="admin-success" role="status">{notice}</p>}
       <div className="admin-form-actions">
         <button className="admin-primary-button" type="submit" disabled={busy}>{busy ? "Saving product..." : "Save product"}</button>
         <button className="admin-secondary-button" type="button" onClick={onCancel}>Cancel</button>
@@ -167,14 +251,20 @@ function ProductEditor({ product, onCancel, onSave }) {
 
 function ProductManager({ session }) {
   const [products, setProducts] = useState([]);
+  const [sections, setSections] = useState([]);
   const [editorProduct, setEditorProduct] = useState(null);
+  const [addingSection, setAddingSection] = useState(false);
+  const [sectionTitle, setSectionTitle] = useState("");
+  const [creatingSection, setCreatingSection] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   async function refreshProducts() {
     setError("");
     try {
-      setProducts(await getAdminProducts());
+      const [nextProducts, nextSections] = await Promise.all([getAdminProducts(), getAdminSections()]);
+      setProducts(nextProducts);
+      setSections(nextSections);
     } catch (loadError) {
       setError(loadError.message || "Products could not be loaded.");
     } finally {
@@ -183,6 +273,29 @@ function ProductManager({ session }) {
   }
 
   useEffect(() => { refreshProducts(); }, []);
+
+  async function addSection(event) {
+    event.preventDefault();
+    const title = sectionTitle.trim();
+    const id = slugify(title);
+    if (!id) {
+      setError("Enter a section name using letters or numbers.");
+      return;
+    }
+
+    setCreatingSection(true);
+    setError("");
+    try {
+      await createCatalogSection({ id, title, displayOrder: sections.length + 1 });
+      setSections(await getAdminSections());
+      setSectionTitle("");
+      setAddingSection(false);
+    } catch (createError) {
+      setError(createError.message || "The section could not be created.");
+    } finally {
+      setCreatingSection(false);
+    }
+  }
 
   async function removeProduct(product) {
     if (!window.confirm(`Delete ${product.title}? This cannot be undone.`)) return;
@@ -211,25 +324,36 @@ function ProductManager({ session }) {
           <ProductEditor
             key={editorProduct.id || "new"}
             product={editorProduct}
+            sections={sections}
             onCancel={() => setEditorProduct(null)}
-            onSave={async () => { await refreshProducts(); setEditorProduct(null); }}
+            onSave={async ({ closeEditor = true } = {}) => { await refreshProducts(); if (closeEditor) setEditorProduct(null); }}
           />
         ) : (
           <>
             <div className="admin-page-heading">
               <div><p className="admin-eyebrow">STORE MANAGEMENT</p><h1>Products</h1><p className="admin-muted">Manage the catalog shown on your storefront.</p></div>
-              <button className="admin-primary-button" onClick={() => setEditorProduct(blankProduct(products.length + 1))}>Add product</button>
+              <div className="admin-heading-actions">
+                <button className="admin-secondary-button" onClick={() => setAddingSection((current) => !current)}>New section</button>
+                <button className="admin-primary-button" disabled={!sections.length} onClick={() => setEditorProduct(blankProduct(products.length + 1, sections))}>Add product</button>
+              </div>
             </div>
+            {addingSection && (
+              <form className="admin-section-form" onSubmit={addSection}>
+                <label>Section name<input value={sectionTitle} onChange={(event) => setSectionTitle(event.target.value)} placeholder="Toys, Pets, Cages..." required /></label>
+                <button className="admin-primary-button" type="submit" disabled={creatingSection}>{creatingSection ? "Creating..." : "Create section"}</button>
+                <button className="admin-secondary-button" type="button" onClick={() => setAddingSection(false)}>Cancel</button>
+              </form>
+            )}
             {error && <p className="admin-error" role="alert">{error}</p>}
             {loading ? <p className="admin-muted">Loading products...</p> : (
               <div className="admin-table-wrap">
                 <table className="admin-table">
-                  <thead><tr><th>Product</th><th>Type</th><th>Price</th><th>Visibility</th><th>Actions</th></tr></thead>
+                  <thead><tr><th>Product</th><th>Section</th><th>Price</th><th>Visibility</th><th>Actions</th></tr></thead>
                   <tbody>
                     {products.map((product) => (
                       <tr key={product.id}>
                         <td><div className="admin-product-cell"><img src={product.images[0] || "/images/logo.png"} alt="" /><div><strong>{product.title}</strong><span>{product.id}</span></div></div></td>
-                        <td>{product.type === "combo" ? "Combo" : "Single"}</td>
+                        <td>{sections.find((section) => section.id === product.sectionId)?.title || "Unassigned"}</td>
                         <td>{product.price || "—"}</td>
                         <td><span className={`admin-status${product.isActive ? " is-active" : ""}`}>{product.isActive ? "Visible" : "Hidden"}</span></td>
                         <td><div className="admin-row-actions"><button onClick={() => setEditorProduct(asEditableProduct(product))}>Edit</button><button className="admin-delete-button" onClick={() => removeProduct(product)}>Delete</button></div></td>
