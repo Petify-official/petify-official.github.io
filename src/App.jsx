@@ -165,7 +165,7 @@ export default function App() {
           <p>Email: <a href={`mailto:${siteData.contact.email}`}>{siteData.contact.email}</a></p>
         </div>
         <p className="footer-legal">© Petify Group. All rights reserved.<br />*Not for human consumption. Store in a cool, dry place.</p>
-        <a className="admin-entry-link" href="/#admin">Admin</a>
+        {/* <a className="admin-entry-link" href="/#admin">Admin</a> */}
       </footer>
       {showScrollTop && (
         <button

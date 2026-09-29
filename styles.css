@@ -45,6 +45,7 @@ html {
 /* Clickable Logo Styles */
 #logo-link {
   display: inline-block;
+  cursor: default;
   text-decoration: none;
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
