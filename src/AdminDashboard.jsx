@@ -248,7 +248,7 @@ function ProductManager({ session }) {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
   const [editorProduct, setEditorProduct] = useState(null);
-  const [activeView, setActiveView] = useState("site-settings");
+  const [activeView, setActiveView] = useState("products");
   const [addingSection, setAddingSection] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [creatingSection, setCreatingSection] = useState(false);
@@ -406,8 +406,8 @@ function ProductManager({ session }) {
       <main className="admin-content">
         <nav className="admin-sidebar" aria-label="Admin pages">
           <p className="admin-eyebrow">WORKSPACE</p>
-          <button type="button" className={activeView === "site-settings" ? "active" : ""} aria-current={activeView === "site-settings" ? "page" : undefined} onClick={() => { setActiveView("site-settings"); setEditorProduct(null); }}>Site settings</button>
           <button type="button" className={activeView === "products" ? "active" : ""} aria-current={activeView === "products" ? "page" : undefined} onClick={() => setActiveView("products")}>Products</button>
+          <button type="button" className={activeView === "site-settings" ? "active" : ""} aria-current={activeView === "site-settings" ? "page" : undefined} onClick={() => { setActiveView("site-settings"); setEditorProduct(null); }}>Site settings</button>
           <a href="/">View storefront</a>
         </nav>
         <div className="admin-page-panel">
