@@ -1,6 +1,6 @@
 # Petify Official
 
-Petify's product catalog is a React + Vite web app. Products, sections, and the storefront logo are loaded from Supabase. If Supabase is unavailable, the storefront shows an error instead of displaying stale local products.
+Petify's product catalog is a React + Vite web app. Products, sections, and all editable storefront content are loaded from Supabase. If Supabase is unavailable, the storefront shows an error instead of displaying stale local data. The browser does not use local storage as a data source.
 
 ## Run locally
 
@@ -13,7 +13,7 @@ Petify's product catalog is a React + Vite web app. Products, sections, and the 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL Editor.
 3. Run `supabase/admin.sql` to create the admin role, product write policies, and public image bucket.
-4. Run `supabase/catalog-sections.sql` to add configurable storefront sections, section management permissions, and public store settings for the logo and hero pills. Rerun this script after updates to apply later additions; it is safe to rerun.
+4. Run `supabase/catalog-sections.sql` to add configurable storefront sections, section management permissions, and public store settings for the logo, hero pills, brand, contact information, feature list, and footer content. Rerun this script after updates to apply later additions; it is safe to rerun.
 5. Run `supabase/seed.sql` to insert the current product details. Seeded products start without photos; upload their photos from the admin page.
 6. In Supabase Authentication, create your account. Do not enable public sign-ups.
 7. In Authentication → Users, copy your account's UUID. In the SQL Editor, assign that account admin access:

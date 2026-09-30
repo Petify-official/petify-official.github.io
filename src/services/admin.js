@@ -59,6 +59,49 @@ export async function getHeroPills() {
   return data?.hero_pills ?? [];
 }
 
+export async function getStorefrontContent() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_legal, coming_soon_title")
+    .eq("id", "storefront")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("Storefront settings are missing from Supabase.");
+
+  return {
+    brandTitle: data.brand_title,
+    tagline: data.tagline,
+    whatsappNumber: data.whatsapp_number,
+    phoneDisplay: data.phone_display,
+    email: data.email,
+    location: data.location,
+    features: data.features ?? [],
+    footerTitle: data.footer_title,
+    footerLegal: data.footer_legal,
+    comingSoonTitle: data.coming_soon_title,
+  };
+}
+
+export async function saveStorefrontContent(content) {
+  const { error } = await supabase
+    .from("site_settings")
+    .update({
+      brand_title: content.brandTitle,
+      tagline: content.tagline,
+      whatsapp_number: content.whatsappNumber,
+      phone_display: content.phoneDisplay,
+      email: content.email,
+      location: content.location,
+      features: content.features,
+      footer_title: content.footerTitle,
+      footer_legal: content.footerLegal,
+      coming_soon_title: content.comingSoonTitle,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", "storefront");
+  if (error) throw error;
+}
+
 export async function saveHeroPills(heroPills) {
   const { error } = await supabase
     .from("site_settings")

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import StorefrontContentEditor from "./features/admin/StorefrontContentEditor.jsx";
 import { supabase } from "./lib/supabase.js";
 import {
   createCatalogSection,
@@ -448,6 +449,7 @@ function ProductManager({ session }) {
                 <button className="admin-primary-button" disabled={!sections.length} onClick={() => setEditorProduct(blankProduct(products.length + 1, sections))}>Add product</button>
               </div>
             </div>
+            <StorefrontContentEditor />
             {addingSection && (
               <form className="admin-section-form" onSubmit={addSection}>
                 <label>Section name<input value={sectionTitle} onChange={(event) => setSectionTitle(event.target.value)} placeholder="Toys, Pets, Cages..." required /></label>

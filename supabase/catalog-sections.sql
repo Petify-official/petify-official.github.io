@@ -88,6 +88,23 @@ insert into public.site_settings (id)
 values ('storefront')
 on conflict (id) do nothing;
 
+alter table public.site_settings
+  add column if not exists brand_title text not null default 'Pëtify',
+  add column if not exists tagline text not null default 'Pure love, premium care',
+  add column if not exists whatsapp_number text not null default '919745001101',
+  add column if not exists phone_display text not null default '+91 97450 01101',
+  add column if not exists email text not null default 'petify.shopping@gmail.com',
+  add column if not exists location text not null default 'Kerala, India',
+  add column if not exists features jsonb not null default '[
+    {"title":"Exotic Pets & Birds","description":"Healthy, hand-reared birds, small pets, and expert care guidance."},
+    {"title":"Fish & Specialty Foods","description":"High-protein nutritional feeds for Channa, Arowana, Discus & more."},
+    {"title":"Cages & Housing","description":"Durable, comfortable enclosures tailored for birds and small pets."},
+    {"title":"Pet Care Accessories","description":"Essential toys, grooming supplies, and everyday care essentials."}
+  ]'::jsonb,
+  add column if not exists footer_title text not null default 'Petify Group',
+  add column if not exists footer_legal text not null default '© Petify Group. All rights reserved. *Not for human consumption. Store in a cool, dry place.',
+  add column if not exists coming_soon_title text not null default 'Something big is coming soon';
+
 do $$
 begin
   if not exists (

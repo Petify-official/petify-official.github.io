@@ -1,0 +1,26 @@
+import { useEffect, useState } from "react";
+import { getCatalog } from "../../services/catalog.js";
+
+export default function useStorefrontCatalog() {
+  const [catalog, setCatalog] = useState({
+    products: [],
+    sections: [],
+    settings: null,
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    let active = true;
+    getCatalog().then((result) => {
+      if (!active) return;
+      setCatalog({ ...result, loading: false });
+    }).catch((error) => {
+      if (!active) return;
+      setCatalog({ products: [], sections: [], settings: null, loading: false, error });
+    });
+    return () => { active = false; };
+  }, []);
+
+  return catalog;
+}

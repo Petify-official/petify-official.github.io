@@ -1108,6 +1108,29 @@ footer a {
   gap: 1rem;
 }
 
+.admin-storefront-content {
+  margin-block: 1.5rem;
+  padding-block: 1.25rem;
+  border-block: 1px solid #dbe3ea;
+}
+
+.admin-storefront-content h2,
+.admin-feature-editor h3 {
+  color: var(--text-dark);
+}
+
+.admin-feature-editor {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-feature-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+
 .admin-span-two {
   grid-column: span 2;
 }
@@ -1351,6 +1374,10 @@ footer a {
 
   .admin-span-two {
     grid-column: auto;
+  }
+
+  .admin-feature-editor-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .admin-login {
