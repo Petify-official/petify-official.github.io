@@ -142,33 +142,54 @@ export default function App() {
       </header>
 
       <main className="container" id="top">
-        {catalogLoading && <p className="catalog-notice" role="status">Loading catalog...</p>}
-        {catalogError && <p className="catalog-notice" role="alert">Catalog service is unavailable. Products could not be loaded from Supabase.</p>}
-        {sections.map((section) => {
-          const sectionProducts = products.filter((product) => product.sectionId === section.id);
-          if (!sectionProducts.length) return null;
-
-          return (
-            <section key={section.id} aria-labelledby={`catalog-section-${section.id}`}>
-              <h2 className="section-title" id={`catalog-section-${section.id}`}>{section.title}</h2>
-              <div className="grid">
-                {sectionProducts.map((product) => <ProductCard key={product.id} product={product} combo={product.type === "combo"} />)}
+        {catalogLoading ? (
+          <section className="catalog-loading" role="status" aria-busy="true" aria-labelledby="catalog-loading-title">
+            <div className="catalog-loading-feature">
+              <img src="/images/bird.png" alt="" />
+              <div className="catalog-loading-copy">
+                <p className="catalog-loading-kicker">PETIFY CATALOG</p>
+                <h2 id="catalog-loading-title">Getting the shop ready</h2>
+                <p>Fetching the latest products for you.</p>
+                <div className="catalog-loading-progress" role="progressbar" aria-label="Loading products">
+                  <span />
+                </div>
               </div>
-            </section>
-          );
-        })}
-        <h2 className="section-title glow-text" aria-label="Something big is coming soon">
-          <span className="status-dot" aria-hidden="true" />
-          <span>Something big is coming soon</span>
-        </h2>
-        <div className="features-grid">
-          {siteData.features.map((feature) => (
-            <div className="feature-item" key={feature.title}>
-              <h4>{feature.title}</h4>
-              <p>{feature.description}</p>
             </div>
-          ))}
-        </div>
+            <div className="catalog-loading-skeletons" aria-hidden="true">
+              {[0, 1, 2].map((item) => <span key={item} />)}
+            </div>
+          </section>
+        ) : catalogError ? (
+          <p className="catalog-notice" role="alert">Catalog service is unavailable. Products could not be loaded from Supabase.</p>
+        ) : (
+          <>
+            {sections.map((section) => {
+              const sectionProducts = products.filter((product) => product.sectionId === section.id);
+              if (!sectionProducts.length) return null;
+
+              return (
+                <section key={section.id} aria-labelledby={`catalog-section-${section.id}`}>
+                  <h2 className="section-title" id={`catalog-section-${section.id}`}>{section.title}</h2>
+                  <div className="grid">
+                    {sectionProducts.map((product) => <ProductCard key={product.id} product={product} combo={product.type === "combo"} />)}
+                  </div>
+                </section>
+              );
+            })}
+            <h2 className="section-title glow-text" aria-label="Something big is coming soon">
+              <span className="status-dot" aria-hidden="true" />
+              <span>Something big is coming soon</span>
+            </h2>
+            <div className="features-grid">
+              {siteData.features.map((feature) => (
+                <div className="feature-item" key={feature.title}>
+                  <h4>{feature.title}</h4>
+                  <p>{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </main>
 
       <footer>
