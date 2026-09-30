@@ -103,7 +103,45 @@ alter table public.site_settings
   ]'::jsonb,
   add column if not exists footer_title text not null default 'Petify Group',
   add column if not exists footer_legal text not null default '© Petify Group. All rights reserved. *Not for human consumption. Store in a cool, dry place.',
-  add column if not exists coming_soon_title text not null default 'Something big is coming soon';
+  add column if not exists coming_soon_title text not null default 'Something big is coming soon',
+  add column if not exists visibility jsonb not null default '{
+    "brand": true,
+    "tagline": true,
+    "hero_pills": true,
+    "catalog": true,
+    "features": true,
+    "coming_soon": true,
+    "footer": true,
+    "footer_copyright": true,
+    "footer_disclaimer": true
+  }'::jsonb;
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'site_settings' and column_name = 'footer_copyright'
+  ) then
+    alter table public.site_settings
+      add column footer_copyright text not null default '© Petify Group. All rights reserved.';
+    update public.site_settings
+    set footer_copyright = coalesce(nullif(trim(split_part(footer_legal, ' *', 1)), ''), '© Petify Group. All rights reserved.');
+  end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'site_settings' and column_name = 'footer_disclaimer'
+  ) then
+    alter table public.site_settings
+      add column footer_disclaimer text not null default '*Not for human consumption. Store in a cool, dry place.';
+    update public.site_settings
+    set footer_disclaimer = case
+      when position(' *' in footer_legal) > 0 then '*' || split_part(footer_legal, ' *', 2)
+      else '*Not for human consumption. Store in a cool, dry place.'
+    end;
+  end if;
+end;
+$$;
 
 do $$
 begin

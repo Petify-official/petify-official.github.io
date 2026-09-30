@@ -40,7 +40,7 @@ export async function getCatalog() {
       .order("display_order", { ascending: true }),
     supabase
       .from("site_settings")
-      .select("logo_url, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_legal, coming_soon_title")
+      .select("logo_url, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
       .eq("id", "storefront")
       .maybeSingle(),
   ]);
@@ -80,8 +80,10 @@ export async function getCatalog() {
       },
       features: row.features ?? [],
       footerTitle: row.footer_title,
-      footerLegal: row.footer_legal,
+      footerCopyright: row.footer_copyright,
+      footerDisclaimer: row.footer_disclaimer,
       comingSoonTitle: row.coming_soon_title,
+      visibility: row.visibility ?? {},
     },
     error: null,
   };

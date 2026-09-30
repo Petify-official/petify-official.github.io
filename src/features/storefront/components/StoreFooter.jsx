@@ -1,4 +1,4 @@
-export default function StoreFooter({ footerTitle, footerLegal, contact }) {
+export default function StoreFooter({ footerTitle, footerCopyright, footerDisclaimer, contact, visibility }) {
   return (
     <footer id="site-footer">
       <h3>{footerTitle}</h3>
@@ -7,7 +7,8 @@ export default function StoreFooter({ footerTitle, footerLegal, contact }) {
         <p>Phone: <a href={`tel:+${contact.whatsappNumber}`}>{contact.phoneDisplay}</a></p>
         <p>Email: <a href={`mailto:${contact.email}`}>{contact.email}</a></p>
       </div>
-      <p className="footer-legal">{footerLegal}</p>
+      {(visibility.footer_copyright ?? true) && <p className="footer-legal">{footerCopyright}</p>}
+      {(visibility.footer_disclaimer ?? true) && <p className="footer-legal">{footerDisclaimer}</p>}
     </footer>
   );
 }

@@ -62,7 +62,7 @@ export async function getHeroPills() {
 export async function getStorefrontContent() {
   const { data, error } = await supabase
     .from("site_settings")
-    .select("brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_legal, coming_soon_title")
+    .select("brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
     .eq("id", "storefront")
     .maybeSingle();
   if (error) throw error;
@@ -77,8 +77,10 @@ export async function getStorefrontContent() {
     location: data.location,
     features: data.features ?? [],
     footerTitle: data.footer_title,
-    footerLegal: data.footer_legal,
+    footerCopyright: data.footer_copyright,
+    footerDisclaimer: data.footer_disclaimer,
     comingSoonTitle: data.coming_soon_title,
+    visibility: data.visibility ?? {},
   };
 }
 
@@ -94,8 +96,10 @@ export async function saveStorefrontContent(content) {
       location: content.location,
       features: content.features,
       footer_title: content.footerTitle,
-      footer_legal: content.footerLegal,
+      footer_copyright: content.footerCopyright,
+      footer_disclaimer: content.footerDisclaimer,
       coming_soon_title: content.comingSoonTitle,
+      visibility: content.visibility,
       updated_at: new Date().toISOString(),
     })
     .eq("id", "storefront");
@@ -216,4 +220,20 @@ export async function deleteProduct(product) {
     const { error: storageError } = await supabase.storage.from(imageBucket).remove(paths);
     if (storageError) throw storageError;
   }
+}
+
+export async function setCatalogSectionActive(sectionId, isActive) {
+  const { error } = await supabase
+    .from("catalog_sections")
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("id", sectionId);
+  if (error) throw error;
+}
+
+export async function setProductActive(productId, isActive) {
+  const { error } = await supabase
+    .from("products")
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq("id", productId);
+  if (error) throw error;
 }

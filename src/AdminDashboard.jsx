@@ -1,19 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import StorefrontContentEditor from "./features/admin/StorefrontContentEditor.jsx";
+import SiteSettingsManager from "./features/admin/SiteSettingsManager.jsx";
 import { supabase } from "./lib/supabase.js";
 import {
   createCatalogSection,
   deleteProduct,
   deleteCatalogSection,
-  getHeroPills,
   getAdminProducts,
   getAdminSections,
-  getStoreLogo,
   renameCatalogSection,
   saveCatalogSectionOrder,
-  saveHeroPills,
   saveProduct,
-  updateStoreLogo,
+  setCatalogSectionActive,
+  setProductActive,
   uploadProductImages,
 } from "./services/admin.js";
 
@@ -249,14 +247,8 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
 function ProductManager({ session }) {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
-  const [storeLogo, setStoreLogo] = useState("");
-  const [heroPills, setHeroPills] = useState([]);
-  const [logoFile, setLogoFile] = useState(null);
-  const [savingLogo, setSavingLogo] = useState(false);
-  const [logoNotice, setLogoNotice] = useState("");
-  const [savingHeroPills, setSavingHeroPills] = useState(false);
-  const [heroPillNotice, setHeroPillNotice] = useState("");
   const [editorProduct, setEditorProduct] = useState(null);
+  const [activeView, setActiveView] = useState("site-settings");
   const [addingSection, setAddingSection] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
   const [creatingSection, setCreatingSection] = useState(false);
@@ -265,15 +257,14 @@ function ProductManager({ session }) {
   const [editingSectionTitle, setEditingSectionTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [savingVisibilityId, setSavingVisibilityId] = useState("");
 
   async function refreshProducts() {
     setError("");
     try {
-      const [nextProducts, nextSections, nextLogo, nextHeroPills] = await Promise.all([getAdminProducts(), getAdminSections(), getStoreLogo(), getHeroPills()]);
+      const [nextProducts, nextSections] = await Promise.all([getAdminProducts(), getAdminSections()]);
       setProducts(nextProducts);
       setSections(nextSections);
-      setStoreLogo(nextLogo);
-      setHeroPills(nextHeroPills);
     } catch (loadError) {
       setError(loadError.message || "Products could not be loaded.");
     } finally {
@@ -361,51 +352,32 @@ function ProductManager({ session }) {
     }
   }
 
-  async function saveLogo(event) {
-    event.preventDefault();
-    if (!logoFile) {
-      setError("Choose a logo image first.");
-      return;
-    }
-
-    setSavingLogo(true);
+  async function toggleSectionVisibility(section) {
+    if (savingVisibilityId) return;
+    setSavingVisibilityId(section.id);
     setError("");
-    setLogoNotice("");
     try {
-      setStoreLogo(await updateStoreLogo(logoFile));
-      setLogoFile(null);
-      setLogoNotice("Store logo saved.");
-    } catch (logoError) {
-      setError(logoError.message || "The store logo could not be saved.");
+      await setCatalogSectionActive(section.id, !section.is_active);
+      setSections(await getAdminSections());
+    } catch (visibilityError) {
+      setError(visibilityError.message || "Section visibility could not be saved.");
     } finally {
-      setSavingLogo(false);
+      setSavingVisibilityId("");
     }
   }
 
-  function updateHeroPill(index, field, value) {
-    setHeroPills((current) => current.map((pill, pillIndex) => pillIndex === index ? { ...pill, [field]: value } : pill));
-    setHeroPillNotice("");
-  }
-
-  async function saveHeroPillSettings(event) {
-    event.preventDefault();
-    const nextHeroPills = heroPills.map((pill) => ({ ...pill, label: pill.label.trim() }));
-    if (nextHeroPills.some((pill) => !pill.label)) {
-      setError("Each hero pill needs text.");
-      return;
-    }
-
-    setSavingHeroPills(true);
+  async function toggleProductVisibility(product) {
+    if (savingVisibilityId) return;
+    const isActive = !product.isActive;
+    setSavingVisibilityId(product.id);
     setError("");
-    setHeroPillNotice("");
     try {
-      await saveHeroPills(nextHeroPills);
-      setHeroPills(nextHeroPills);
-      setHeroPillNotice("Hero pills saved.");
-    } catch (saveError) {
-      setError(saveError.message || "Hero pills could not be saved.");
+      await setProductActive(product.id, isActive);
+      setProducts((current) => current.map((item) => item.id === product.id ? { ...item, isActive } : item));
+    } catch (visibilityError) {
+      setError(visibilityError.message || "Product visibility could not be saved.");
     } finally {
-      setSavingHeroPills(false);
+      setSavingVisibilityId("");
     }
   }
 
@@ -432,119 +404,94 @@ function ProductManager({ session }) {
         <div className="admin-user"><span>{session.user.email}</span><button onClick={signOut}>Sign out</button></div>
       </header>
       <main className="admin-content">
-        {editorProduct ? (
-          <ProductEditor
-            key={editorProduct.id || "new"}
-            product={editorProduct}
-            sections={sections}
-            onCancel={() => setEditorProduct(null)}
-            onSave={async ({ closeEditor = true } = {}) => { await refreshProducts(); if (closeEditor) setEditorProduct(null); }}
-          />
-        ) : (
-          <>
-            <div className="admin-page-heading">
-              <div><p className="admin-eyebrow">STORE MANAGEMENT</p><h1>Products</h1><p className="admin-muted">Manage the catalog shown on your storefront.</p></div>
-              <div className="admin-heading-actions">
-                <button className="admin-secondary-button" onClick={() => setAddingSection((current) => !current)}>New section</button>
-                <button className="admin-primary-button" disabled={!sections.length} onClick={() => setEditorProduct(blankProduct(products.length + 1, sections))}>Add product</button>
-              </div>
-            </div>
-            <StorefrontContentEditor />
-            {addingSection && (
-              <form className="admin-section-form" onSubmit={addSection}>
-                <label>Section name<input value={sectionTitle} onChange={(event) => setSectionTitle(event.target.value)} placeholder="Toys, Pets, Cages..." required /></label>
-                <button className="admin-primary-button" type="submit" disabled={creatingSection}>{creatingSection ? "Creating..." : "Create section"}</button>
-                <button className="admin-secondary-button" type="button" onClick={() => setAddingSection(false)}>Cancel</button>
-              </form>
-            )}
-            <form className="admin-store-logo" onSubmit={saveLogo}>
-              {storeLogo ? <img src={storeLogo} alt="Current store logo" /> : <span className="admin-store-logo-empty">No logo uploaded</span>}
-              <label>Store logo<input type="file" accept="image/*" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} /></label>
-              <button className="admin-primary-button" type="submit" disabled={savingLogo || !logoFile}>{savingLogo ? "Uploading logo..." : "Save logo"}</button>
-              {logoNotice && <span className="admin-success" role="status">{logoNotice}</span>}
-            </form>
-            <form className="admin-hero-pills" onSubmit={saveHeroPillSettings}>
-              <div className="admin-hero-pills-heading">
-                <div><p className="admin-eyebrow">STOREFRONT NAVIGATION</p><h2>Hero pills</h2></div>
-                <button className="admin-secondary-button" type="button" onClick={() => {
-                  setHeroPills((current) => [...current, { id: crypto.randomUUID(), label: "New pill", target: "" }]);
-                  setHeroPillNotice("");
-                }}>Add pill</button>
-              </div>
-              {heroPills.map((pill, index) => (
-                <div className="admin-hero-pill-row" key={pill.id}>
-                  <label>Pill text<input value={pill.label} onChange={(event) => updateHeroPill(index, "label", event.target.value)} required /></label>
-                  <label>Click destination
-                    <select value={pill.target || ""} onChange={(event) => updateHeroPill(index, "target", event.target.value)}>
-                      <option value="">No destination</option>
-                      <option value="#site-header">Header</option>
-                      {sections.filter((section) => products.some((product) => product.sectionId === section.id)).map((section) => (
-                        <option key={section.id} value={`#catalog-section-${section.id}`}>{section.title}</option>
-                      ))}
-                      <option value="#site-footer">Footer</option>
-                    </select>
-                  </label>
-                  <button className="admin-delete-button" type="button" aria-label={`Delete ${pill.label || "hero pill"}`} onClick={() => {
-                    setHeroPills((current) => current.filter((_, pillIndex) => pillIndex !== index));
-                    setHeroPillNotice("");
-                  }}>Delete</button>
+        <nav className="admin-sidebar" aria-label="Admin pages">
+          <p className="admin-eyebrow">WORKSPACE</p>
+          <button type="button" className={activeView === "site-settings" ? "active" : ""} aria-current={activeView === "site-settings" ? "page" : undefined} onClick={() => { setActiveView("site-settings"); setEditorProduct(null); }}>Site settings</button>
+          <button type="button" className={activeView === "products" ? "active" : ""} aria-current={activeView === "products" ? "page" : undefined} onClick={() => setActiveView("products")}>Products</button>
+          <a href="/">View storefront</a>
+        </nav>
+        <div className="admin-page-panel">
+          {activeView === "site-settings" ? (
+            <>
+              <div className="admin-page-heading"><div><p className="admin-eyebrow">SITE CONFIGURATION</p><h1>Site settings</h1><p className="admin-muted">Manage your brand, content, and what appears on the storefront.</p></div></div>
+              <SiteSettingsManager />
+            </>
+          ) : editorProduct ? (
+            <ProductEditor
+              key={editorProduct.id || "new"}
+              product={editorProduct}
+              sections={sections}
+              onCancel={() => setEditorProduct(null)}
+              onSave={async ({ closeEditor = true } = {}) => { await refreshProducts(); if (closeEditor) setEditorProduct(null); }}
+            />
+          ) : (
+            <>
+              <div className="admin-page-heading">
+                <div><p className="admin-eyebrow">CATALOG MANAGEMENT</p><h1>Products</h1><p className="admin-muted">Manage products and their storefront sections.</p></div>
+                <div className="admin-heading-actions">
+                  <button className="admin-secondary-button" type="button" onClick={() => setAddingSection((current) => !current)}>New section</button>
+                  <button className="admin-primary-button" type="button" disabled={!sections.length} onClick={() => setEditorProduct(blankProduct(products.length + 1, sections))}>Add product</button>
                 </div>
-              ))}
-              {heroPillNotice && <p className="admin-success" role="status">{heroPillNotice}</p>}
-              <div className="admin-form-actions">
-                <button className="admin-primary-button" type="submit" disabled={savingHeroPills}>{savingHeroPills ? "Saving pills..." : "Save hero pills"}</button>
               </div>
-            </form>
-            {sections.length > 0 && (
-              <section className="admin-section-order" aria-labelledby="admin-section-order-title">
-                <h2 id="admin-section-order-title">Storefront section order</h2>
-                <ol>
-                  {sections.map((section, index) => (
-                    <li key={section.id}>
-                      {editingSectionId === section.id ? (
-                        <form className="admin-section-rename" onSubmit={(event) => saveSectionTitle(event, section)}>
-                          <input aria-label={`Rename ${section.title}`} value={editingSectionTitle} onChange={(event) => setEditingSectionTitle(event.target.value)} required />
-                          <button className="admin-primary-button" type="submit">Save</button>
-                          <button className="admin-secondary-button" type="button" onClick={() => setEditingSectionId("")}>Cancel</button>
-                        </form>
-                      ) : (
-                        <>
-                          <span className="admin-section-order-name"><strong>{section.title}</strong><small>{section.id}</small></span>
-                          <span className="admin-section-order-actions">
-                            <button className="admin-secondary-button admin-order-arrow" type="button" title="Move section earlier" aria-label={`Move ${section.title} earlier`} disabled={savingSectionOrder || index === 0} onClick={() => moveSection(index, -1)}>↑</button>
-                            <button className="admin-secondary-button admin-order-arrow" type="button" title="Move section later" aria-label={`Move ${section.title} later`} disabled={savingSectionOrder || index === sections.length - 1} onClick={() => moveSection(index, 1)}>↓</button>
-                            <button className="admin-secondary-button" type="button" onClick={() => { setEditingSectionId(section.id); setEditingSectionTitle(section.title); }}>Rename</button>
-                            <button className="admin-delete-button" type="button" disabled={products.some((product) => product.sectionId === section.id)} title={products.some((product) => product.sectionId === section.id) ? "Move or delete assigned products first" : "Delete section"} onClick={() => removeSection(section)}>Delete</button>
-                          </span>
-                        </>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-            {error && <p className="admin-error" role="alert">{error}</p>}
-            {loading ? <p className="admin-muted">Loading products...</p> : (
-              <div className="admin-table-wrap">
-                <table className="admin-table">
-                  <thead><tr><th>Product</th><th>Section</th><th>Price</th><th>Visibility</th><th>Actions</th></tr></thead>
-                  <tbody>
-                    {products.map((product) => (
-                      <tr key={product.id}>
-                        <td><div className="admin-product-cell">{product.images[0] ? <img src={product.images[0]} alt="" /> : <span className="admin-product-placeholder" aria-hidden="true" />}<div><strong>{product.title}</strong><span>{product.id}</span></div></div></td>
-                        <td>{sections.find((section) => section.id === product.sectionId)?.title || "Unassigned"}</td>
-                        <td>{product.price || "—"}</td>
-                        <td><span className={`admin-status${product.isActive ? " is-active" : ""}`}>{product.isActive ? "Visible" : "Hidden"}</span></td>
-                        <td><div className="admin-row-actions"><button onClick={() => setEditorProduct(asEditableProduct(product))}>Edit</button><button className="admin-delete-button" onClick={() => removeProduct(product)}>Delete</button></div></td>
-                      </tr>
+              {addingSection && (
+                <form className="admin-section-form" onSubmit={addSection}>
+                  <label>Section name<input value={sectionTitle} onChange={(event) => setSectionTitle(event.target.value)} placeholder="Toys, Pets, Cages..." required /></label>
+                  <button className="admin-primary-button" type="submit" disabled={creatingSection}>{creatingSection ? "Creating..." : "Create section"}</button>
+                  <button className="admin-secondary-button" type="button" onClick={() => setAddingSection(false)}>Cancel</button>
+                </form>
+              )}
+              {sections.length > 0 && (
+                <section className="admin-section-order" aria-labelledby="admin-section-order-title">
+                  <h2 id="admin-section-order-title">Catalog sections</h2>
+                  <ol>
+                    {sections.map((section, index) => (
+                      <li key={section.id}>
+                        {editingSectionId === section.id ? (
+                          <form className="admin-section-rename" onSubmit={(event) => saveSectionTitle(event, section)}>
+                            <input aria-label={`Rename ${section.title}`} value={editingSectionTitle} onChange={(event) => setEditingSectionTitle(event.target.value)} required />
+                            <button className="admin-primary-button" type="submit">Save</button>
+                            <button className="admin-secondary-button" type="button" onClick={() => setEditingSectionId("")}>Cancel</button>
+                          </form>
+                        ) : (
+                          <>
+                            <span className="admin-section-order-name"><strong>{section.title}</strong><small>{section.id}</small></span>
+                            <label className="admin-inline-switch"><input type="checkbox" role="switch" checked={section.is_active} disabled={Boolean(savingVisibilityId)} aria-label={`${section.is_active ? "Hide" : "Show"} ${section.title}`} onChange={() => toggleSectionVisibility(section)} /><span>{section.is_active ? "Visible" : "Hidden"}</span></label>
+                            <span className="admin-section-order-actions">
+                              <button className="admin-secondary-button admin-order-arrow" type="button" title="Move section earlier" aria-label={`Move ${section.title} earlier`} disabled={savingSectionOrder || index === 0} onClick={() => moveSection(index, -1)}>↑</button>
+                              <button className="admin-secondary-button admin-order-arrow" type="button" title="Move section later" aria-label={`Move ${section.title} later`} disabled={savingSectionOrder || index === sections.length - 1} onClick={() => moveSection(index, 1)}>↓</button>
+                              <button className="admin-secondary-button" type="button" onClick={() => { setEditingSectionId(section.id); setEditingSectionTitle(section.title); }}>Rename</button>
+                              <button className="admin-delete-button" type="button" disabled={products.some((product) => product.sectionId === section.id)} title={products.some((product) => product.sectionId === section.id) ? "Move or delete assigned products first" : "Delete section"} onClick={() => removeSection(section)}>Delete</button>
+                            </span>
+                          </>
+                        )}
+                      </li>
                     ))}
-                    {!products.length && <tr><td colSpan="5" className="admin-empty">No products yet. Add your first product to begin.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        )}
+                  </ol>
+                </section>
+              )}
+              {error && <p className="admin-error" role="alert">{error}</p>}
+              {loading ? <p className="admin-muted">Loading products...</p> : (
+                <div className="admin-table-wrap">
+                  <table className="admin-table">
+                    <thead><tr><th>Product</th><th>Section</th><th>Price</th><th>Visibility</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {products.map((product) => (
+                        <tr key={product.id}>
+                          <td><div className="admin-product-cell">{product.images[0] ? <img src={product.images[0]} alt="" /> : <span className="admin-product-placeholder" aria-hidden="true" />}<div><strong>{product.title}</strong><span>{product.id}</span></div></div></td>
+                          <td>{sections.find((section) => section.id === product.sectionId)?.title || "Unassigned"}</td>
+                          <td>{product.price || "—"}</td>
+                          <td><label className="admin-inline-switch"><input type="checkbox" role="switch" checked={product.isActive} disabled={Boolean(savingVisibilityId)} aria-label={`${product.isActive ? "Hide" : "Show"} ${product.title}`} onChange={() => toggleProductVisibility(product)} /><span>{product.isActive ? "Visible" : "Hidden"}</span></label></td>
+                          <td><div className="admin-row-actions"><button type="button" onClick={() => setEditorProduct(asEditableProduct(product))}>Edit</button><button className="admin-delete-button" type="button" onClick={() => removeProduct(product)}>Delete</button></div></td>
+                        </tr>
+                      ))}
+                      {!products.length && <tr><td colSpan="5" className="admin-empty">No products yet. Add your first product to begin.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </main>
     </div>
   );

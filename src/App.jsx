@@ -53,29 +53,34 @@ export default function App() {
 
   return (
     <>
-      <StoreHeader
-        brandTitle={settings?.brandTitle ?? ""}
-        tagline={settings?.tagline ?? ""}
-        logoUrl={settings?.logoUrl ?? ""}
-        heroPills={settings?.heroPills ?? []}
-        onPillClick={scrollToHeroTarget}
-      />
+      {!loading && !error && settings && (
+        <StoreHeader
+          brandTitle={settings.brandTitle}
+          tagline={settings.tagline}
+          logoUrl={settings.logoUrl}
+          heroPills={settings.heroPills}
+          visibility={settings.visibility}
+          onPillClick={scrollToHeroTarget}
+        />
+      )}
       <main className="container" id="top">
         {loading ? <CatalogLoading /> : error ? (
           <p className="catalog-notice" role="alert">Catalog service is unavailable. Products could not be loaded from Supabase.</p>
         ) : (
           <>
-            <CatalogSections sections={sections} products={products} whatsappNumber={settings.contact.whatsappNumber} />
-            <h2 className="section-title glow-text" aria-label={settings.comingSoonTitle}>
-              <span className="status-dot" aria-hidden="true" />
-              <span>{settings.comingSoonTitle}</span>
-            </h2>
-            <FeatureList features={settings.features} />
+            {(settings.visibility.catalog ?? true) && <CatalogSections sections={sections} products={products} whatsappNumber={settings.contact.whatsappNumber} />}
+            {(settings.visibility.coming_soon ?? true) && (
+              <h2 className="section-title glow-text" aria-label={settings.comingSoonTitle}>
+                <span className="status-dot" aria-hidden="true" />
+                <span>{settings.comingSoonTitle}</span>
+              </h2>
+            )}
+            {(settings.visibility.features ?? true) && <FeatureList features={settings.features} />}
           </>
         )}
       </main>
-      {!loading && !error && settings && (
-        <StoreFooter footerTitle={settings.footerTitle} footerLegal={settings.footerLegal} contact={settings.contact} />
+      {!loading && !error && settings && (settings.visibility.footer ?? true) && (
+        <StoreFooter footerTitle={settings.footerTitle} footerCopyright={settings.footerCopyright} footerDisclaimer={settings.footerDisclaimer} contact={settings.contact} visibility={settings.visibility} />
       )}
       {showScrollTop && <ScrollToTop onClick={scrollToTop} />}
     </>

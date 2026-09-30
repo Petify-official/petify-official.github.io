@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { getStorefrontContent, saveStorefrontContent } from "../../services/admin.js";
 
+const visibilityOptions = [
+  ["brand", "Brand logo"],
+  ["tagline", "Tagline"],
+  ["hero_pills", "Hero navigation"],
+  ["catalog", "Product catalog"],
+  ["features", "Store features"],
+  ["coming_soon", "Coming soon banner"],
+  ["footer", "Contact and footer"],
+  ["footer_copyright", "Copyright note"],
+  ["footer_disclaimer", "Store disclaimer"],
+];
+
 export default function StorefrontContentEditor() {
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +47,14 @@ export default function StorefrontContentEditor() {
     setNotice("");
   }
 
+  function updateVisibility(field, isVisible) {
+    setContent((current) => ({
+      ...current,
+      visibility: { ...current.visibility, [field]: isVisible },
+    }));
+    setNotice("");
+  }
+
   async function submit(event) {
     event.preventDefault();
     setSaving(true);
@@ -65,7 +85,23 @@ export default function StorefrontContentEditor() {
           <label>Location<input value={content.location} onChange={(event) => update("location", event.target.value)} required /></label>
           <label>Footer title<input value={content.footerTitle} onChange={(event) => update("footerTitle", event.target.value)} required /></label>
           <label>Coming soon title<input value={content.comingSoonTitle} onChange={(event) => update("comingSoonTitle", event.target.value)} required /></label>
-          <label className="admin-span-two">Footer note<textarea rows="2" value={content.footerLegal} onChange={(event) => update("footerLegal", event.target.value)} required /></label>
+          <label>Copyright note<input value={content.footerCopyright} onChange={(event) => update("footerCopyright", event.target.value)} required /></label>
+          <label>Store disclaimer<input value={content.footerDisclaimer} onChange={(event) => update("footerDisclaimer", event.target.value)} required /></label>
+          <fieldset className="admin-visibility-list admin-span-two">
+            <legend>Storefront visibility</legend>
+            {visibilityOptions.map(([field, label]) => (
+              <label className="admin-visibility-switch" key={field}>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={content.visibility[field] ?? true}
+                  onChange={(event) => updateVisibility(field, event.target.checked)}
+                />
+                <span>{label}</span>
+                <small>{content.visibility[field] ?? true ? "Visible" : "Hidden"}</small>
+              </label>
+            ))}
+          </fieldset>
           <div className="admin-feature-editor admin-span-two">
             <h3>Store features</h3>
             {content.features.map((feature, index) => (
