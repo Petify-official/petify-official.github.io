@@ -43,7 +43,7 @@ function slugify(value) {
 function asEditableProduct(product) {
   return {
     ...product,
-    specsText: product.specs.map((spec) => spec.replace(/<[^>]*>/g, "")).join("\n"),
+    specsText: (product.specs ?? []).map((spec) => String(spec).replace(/<[^>]*>/g, "")).join("\n"),
   };
 }
 
@@ -51,7 +51,6 @@ function AdminLogin({ onSignedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(null);
   const [error, setError] = useState("");
 
   async function submit(event) {
@@ -83,9 +82,10 @@ function AdminLogin({ onSignedIn }) {
 
 function ProductEditor({ product, sections, onCancel, onSave }) {
   const [form, setForm] = useState(product);
-  const [imageItems, setImageItems] = useState(() => product.images.map((url, index) => ({ id: `existing-${index}`, url })));
+  const [imageItems, setImageItems] = useState(() => (product.images ?? []).map((url, index) => ({ id: `existing-${index}`, url })));
   const previewUrls = useRef(new Set());
   const [busy, setBusy] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const isEditing = Boolean(product.id);
