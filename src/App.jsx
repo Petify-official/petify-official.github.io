@@ -86,6 +86,7 @@ export default function App() {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
   const [logoUrl, setLogoUrl] = useState("");
+  const [heroPills, setHeroPills] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState(false);
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.hash === "#admin");
@@ -110,12 +111,14 @@ export default function App() {
       setProducts(catalog.products);
       setSections(catalog.sections);
       setLogoUrl(catalog.logoUrl);
+      setHeroPills(catalog.heroPills);
       setCatalogError(Boolean(catalog.error));
     }).catch(() => {
       if (!active) return;
       setProducts([]);
       setSections([]);
       setLogoUrl("");
+      setHeroPills([]);
       setCatalogError(true);
     }).finally(() => {
       if (active) setCatalogLoading(false);
@@ -123,11 +126,23 @@ export default function App() {
     return () => { active = false; };
   }, []);
 
+  function scrollToHeroTarget(event, target) {
+    event.preventDefault();
+    const element = document.getElementById(target.slice(1));
+    if (!element) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top);
+    } else {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   if (isAdminRoute) return <AdminDashboard />;
 
   return (
     <>
-      <header>
+      <header id="site-header">
         <h1 className="brand-title">
           {logoUrl && (
             <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}>
@@ -137,7 +152,9 @@ export default function App() {
         </h1>
         <p className="brand-tagline">{siteData.header.tagline}</p>
         <div className="hero-pills">
-          {siteData.header.pills.map((pill) => <span className="pill" key={pill}>{pill}</span>)}
+          {heroPills.map((pill) => pill.target
+            ? <a className="pill" href={pill.target} key={pill.id} onClick={(event) => scrollToHeroTarget(event, pill.target)}>{pill.label}</a>
+            : <span className="pill" key={pill.id}>{pill.label}</span>)}
         </div>
       </header>
 
@@ -192,7 +209,7 @@ export default function App() {
         )}
       </main>
 
-      <footer>
+      <footer id="site-footer">
         <h3>Petify Group</h3>
         <p className="footer-location">{siteData.contact.location}</p>
         <div className="contact-details">

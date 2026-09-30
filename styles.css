@@ -84,12 +84,27 @@ html {
 }
 
 .pill {
+  display: inline-flex;
+  align-items: center;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(5px);
+  color: white;
   padding: 0.4rem 1rem;
   border-radius: 50px;
   font-size: 0.875rem;
   font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.pill:hover {
+  background: rgba(255, 255, 255, 0.24);
+  transform: translateY(-1px);
+}
+
+.pill:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
 }
 
 /* Container */
@@ -811,6 +826,69 @@ footer a {
   margin: 0;
 }
 
+.admin-hero-pills {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: white;
+}
+
+.admin-hero-pills-heading {
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.admin-hero-pills-heading h2 {
+  color: var(--text-dark);
+  font-size: 1.1rem;
+}
+
+.admin-hero-pill-row {
+  padding: 0.75rem 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.admin-hero-pill-row label {
+  min-width: 0;
+  display: grid;
+  gap: 0.35rem;
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.admin-hero-pill-row input,
+.admin-hero-pill-row select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: white;
+  color: var(--text-dark);
+  font: inherit;
+  font-weight: 400;
+}
+
+.admin-hero-pill-row input:focus,
+.admin-hero-pill-row select:focus {
+  outline: 2px solid #93c5fd;
+  border-color: var(--primary);
+}
+
+.admin-hero-pill-remove {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
 .admin-section-order {
   margin: 1.5rem 0;
 }
@@ -1244,6 +1322,14 @@ footer a {
 
   .admin-store-logo {
     flex-wrap: wrap;
+  }
+
+  .admin-hero-pill-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-hero-pill-remove {
+    justify-self: start;
   }
 
   .admin-store-logo label {

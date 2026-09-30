@@ -48,6 +48,25 @@ export async function getStoreLogo() {
   return data?.logo_url ?? "";
 }
 
+export async function getHeroPills() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("hero_pills")
+    .eq("id", "storefront")
+    .maybeSingle();
+  if (error) throw error;
+
+  return data?.hero_pills ?? [];
+}
+
+export async function saveHeroPills(heroPills) {
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ hero_pills: heroPills, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
+}
+
 export async function createCatalogSection(section) {
   const { error } = await supabase.from("catalog_sections").insert({
     id: section.id,

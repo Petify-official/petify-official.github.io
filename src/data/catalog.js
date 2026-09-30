@@ -2,13 +2,6 @@ export const siteData = {
   header: {
     title: "Pëtify",
     tagline: "Pure love, premium care",
-    pills: [
-      "All India Delivery Available",
-      "Exotic Pets & Birds",
-      "Ornamental Fish Food",
-      "Cages & Enclosures",
-      "Premium Accessories",
-    ],
   },
   contact: {
     whatsappNumber: "919745001101",

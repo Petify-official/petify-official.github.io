@@ -13,7 +13,7 @@ Petify's product catalog is a React + Vite web app. Products, sections, and the 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL Editor.
 3. Run `supabase/admin.sql` to create the admin role, product write policies, and public image bucket.
-4. Run `supabase/catalog-sections.sql` to add configurable storefront sections, section management permissions, and the public store-logo setting. Rerun this script after updates to apply later additions; it is safe to rerun.
+4. Run `supabase/catalog-sections.sql` to add configurable storefront sections, section management permissions, and public store settings for the logo and hero pills. Rerun this script after updates to apply later additions; it is safe to rerun.
 5. Run `supabase/seed.sql` to insert the current product details. Seeded products start without photos; upload their photos from the admin page.
 6. In Supabase Authentication, create your account. Do not enable public sign-ups.
 7. In Authentication → Users, copy your account's UUID. In the SQL Editor, assign that account admin access:
@@ -24,7 +24,7 @@ Petify's product catalog is a React + Vite web app. Products, sections, and the 
    ```
 
 8. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the project's API settings. Restart Vite.
-9. Visit `/#admin`, sign in with the account you created, and manage products. Create, rename, reorder, or delete empty storefront sections such as Toys or Cages from the Products page. Upload or replace the store logo there too. New photos and the logo upload to the `product-images` Storage bucket; edit existing products and choose **Move current photos to Supabase Storage** to migrate their current `/images/...` photos.
+9. Visit `/#admin`, sign in with the account you created, and manage products. Create, rename, reorder, or delete empty storefront sections such as Toys or Cages from the Products page. Manage hero pill text and destinations, and upload or replace the store logo there too. New photos and the logo upload to the `product-images` Storage bucket.
 
 Only the public anon key belongs in this frontend. Never put a service-role key in a `VITE_` variable. Visitors can read active products; database and Storage writes require the assigned admin role.
 

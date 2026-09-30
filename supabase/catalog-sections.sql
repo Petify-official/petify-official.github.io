@@ -88,6 +88,35 @@ insert into public.site_settings (id)
 values ('storefront')
 on conflict (id) do nothing;
 
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'site_settings'
+      and column_name = 'hero_pills'
+  ) then
+    alter table public.site_settings
+      add column hero_pills jsonb not null default '[]'::jsonb;
+
+    update public.site_settings
+    set hero_pills = jsonb_build_array(
+      jsonb_build_object('id', 'all-india-delivery', 'label', 'All India Delivery Available', 'target', '#site-footer'),
+      jsonb_build_object('id', 'exotic-pets', 'label', 'Exotic Pets & Birds', 'target', '#site-footer'),
+      jsonb_build_object(
+        'id', 'ornamental-fish-food',
+        'label', 'Ornamental Fish Food',
+        'target', '#catalog-section-' || coalesce((select id from public.catalog_sections where is_active order by display_order limit 1), 'singles')
+      ),
+      jsonb_build_object('id', 'cages-enclosures', 'label', 'Cages & Enclosures', 'target', '#site-footer'),
+      jsonb_build_object('id', 'premium-accessories', 'label', 'Premium Accessories', 'target', '#site-footer')
+    )
+    where id = 'storefront';
+  end if;
+end;
+$$;
+
 alter table public.site_settings enable row level security;
 grant select on public.site_settings to anon, authenticated;
 grant update on public.site_settings to authenticated;

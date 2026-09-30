@@ -24,6 +24,7 @@ export async function getCatalog() {
       products: [],
       sections: [],
       logoUrl: "",
+      heroPills: [],
       source: "supabase",
       error: new Error("Supabase is not configured."),
     };
@@ -42,7 +43,7 @@ export async function getCatalog() {
       .order("display_order", { ascending: true }),
     supabase
       .from("site_settings")
-      .select("logo_url")
+      .select("logo_url, hero_pills")
       .eq("id", "storefront")
       .maybeSingle(),
   ]);
@@ -52,6 +53,7 @@ export async function getCatalog() {
       products: [],
       sections: [],
       logoUrl: settingsResult.data?.logo_url ?? "",
+      heroPills: [],
       source: "supabase",
       error: productsResult.error || sectionsResult.error,
     };
@@ -61,6 +63,7 @@ export async function getCatalog() {
     products: productsResult.data.map(mapProduct),
     sections: sectionsResult.data,
     logoUrl: settingsResult.data?.logo_url ?? "",
+    heroPills: settingsResult.data?.hero_pills ?? [],
     source: "supabase",
     error: settingsResult.error,
   };

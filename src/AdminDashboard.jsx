@@ -4,11 +4,13 @@ import {
   createCatalogSection,
   deleteProduct,
   deleteCatalogSection,
+  getHeroPills,
   getAdminProducts,
   getAdminSections,
   getStoreLogo,
   renameCatalogSection,
   saveCatalogSectionOrder,
+  saveHeroPills,
   saveProduct,
   updateStoreLogo,
   uploadProductImages,
@@ -247,9 +249,12 @@ function ProductManager({ session }) {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
   const [storeLogo, setStoreLogo] = useState("");
+  const [heroPills, setHeroPills] = useState([]);
   const [logoFile, setLogoFile] = useState(null);
   const [savingLogo, setSavingLogo] = useState(false);
   const [logoNotice, setLogoNotice] = useState("");
+  const [savingHeroPills, setSavingHeroPills] = useState(false);
+  const [heroPillNotice, setHeroPillNotice] = useState("");
   const [editorProduct, setEditorProduct] = useState(null);
   const [addingSection, setAddingSection] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
@@ -263,10 +268,11 @@ function ProductManager({ session }) {
   async function refreshProducts() {
     setError("");
     try {
-      const [nextProducts, nextSections, nextLogo] = await Promise.all([getAdminProducts(), getAdminSections(), getStoreLogo()]);
+      const [nextProducts, nextSections, nextLogo, nextHeroPills] = await Promise.all([getAdminProducts(), getAdminSections(), getStoreLogo(), getHeroPills()]);
       setProducts(nextProducts);
       setSections(nextSections);
       setStoreLogo(nextLogo);
+      setHeroPills(nextHeroPills);
     } catch (loadError) {
       setError(loadError.message || "Products could not be loaded.");
     } finally {
@@ -375,6 +381,33 @@ function ProductManager({ session }) {
     }
   }
 
+  function updateHeroPill(index, field, value) {
+    setHeroPills((current) => current.map((pill, pillIndex) => pillIndex === index ? { ...pill, [field]: value } : pill));
+    setHeroPillNotice("");
+  }
+
+  async function saveHeroPillSettings(event) {
+    event.preventDefault();
+    const nextHeroPills = heroPills.map((pill) => ({ ...pill, label: pill.label.trim() }));
+    if (nextHeroPills.some((pill) => !pill.label)) {
+      setError("Each hero pill needs text.");
+      return;
+    }
+
+    setSavingHeroPills(true);
+    setError("");
+    setHeroPillNotice("");
+    try {
+      await saveHeroPills(nextHeroPills);
+      setHeroPills(nextHeroPills);
+      setHeroPillNotice("Hero pills saved.");
+    } catch (saveError) {
+      setError(saveError.message || "Hero pills could not be saved.");
+    } finally {
+      setSavingHeroPills(false);
+    }
+  }
+
   async function removeProduct(product) {
     if (!window.confirm(`Delete ${product.title}? This cannot be undone.`)) return;
     try {
@@ -427,6 +460,38 @@ function ProductManager({ session }) {
               <label>Store logo<input type="file" accept="image/*" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} /></label>
               <button className="admin-primary-button" type="submit" disabled={savingLogo || !logoFile}>{savingLogo ? "Uploading logo..." : "Save logo"}</button>
               {logoNotice && <span className="admin-success" role="status">{logoNotice}</span>}
+            </form>
+            <form className="admin-hero-pills" onSubmit={saveHeroPillSettings}>
+              <div className="admin-hero-pills-heading">
+                <div><p className="admin-eyebrow">STOREFRONT NAVIGATION</p><h2>Hero pills</h2></div>
+                <button className="admin-secondary-button" type="button" onClick={() => {
+                  setHeroPills((current) => [...current, { id: crypto.randomUUID(), label: "New pill", target: "" }]);
+                  setHeroPillNotice("");
+                }}>Add pill</button>
+              </div>
+              {heroPills.map((pill, index) => (
+                <div className="admin-hero-pill-row" key={pill.id}>
+                  <label>Pill text<input value={pill.label} onChange={(event) => updateHeroPill(index, "label", event.target.value)} required /></label>
+                  <label>Click destination
+                    <select value={pill.target || ""} onChange={(event) => updateHeroPill(index, "target", event.target.value)}>
+                      <option value="">No destination</option>
+                      <option value="#site-header">Header</option>
+                      {sections.filter((section) => products.some((product) => product.sectionId === section.id)).map((section) => (
+                        <option key={section.id} value={`#catalog-section-${section.id}`}>{section.title}</option>
+                      ))}
+                      <option value="#site-footer">Footer</option>
+                    </select>
+                  </label>
+                  <button className="admin-delete-button" type="button" aria-label={`Delete ${pill.label || "hero pill"}`} onClick={() => {
+                    setHeroPills((current) => current.filter((_, pillIndex) => pillIndex !== index));
+                    setHeroPillNotice("");
+                  }}>Delete</button>
+                </div>
+              ))}
+              {heroPillNotice && <p className="admin-success" role="status">{heroPillNotice}</p>}
+              <div className="admin-form-actions">
+                <button className="admin-primary-button" type="submit" disabled={savingHeroPills}>{savingHeroPills ? "Saving pills..." : "Save hero pills"}</button>
+              </div>
             </form>
             {sections.length > 0 && (
               <section className="admin-section-order" aria-labelledby="admin-section-order-title">
