@@ -7,11 +7,6 @@ create table if not exists public.catalog_sections (
   updated_at timestamptz not null default now()
 );
 
-insert into public.catalog_sections (id, title, display_order)
-values
-  ('singles', 'Single Products', 1),
-  ('combos', 'Special Combo Offers', 2)
-on conflict (id) do nothing;
 
 alter table public.products
   add column if not exists section_id text;

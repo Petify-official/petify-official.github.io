@@ -20,7 +20,7 @@ const blankProduct = (displayOrder, sections) => ({
   id: "",
   type: "single",
   sectionId: sections[0]?.id ?? "",
-  badge: "Premium Feed",
+  badge: "",
   title: "",
   description: "",
   specsText: "",
