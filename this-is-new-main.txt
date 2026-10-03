@@ -1,0 +1,3 @@
+git fetch origin
+git branch new-main origin/main
+git push origin new-main
