@@ -59,6 +59,37 @@ export async function getStoreFavicon() {
   return data?.favicon_url ?? "";
 }
 
+export async function getAppearanceSettings() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("color_palette, loading_screen")
+    .eq("id", "storefront")
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("Storefront settings are missing from Supabase.");
+
+  return {
+    colorPalette: data.color_palette ?? null,
+    loadingScreen: data.loading_screen ?? null,
+  };
+}
+
+export async function saveColorPalette(colorPalette) {
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ color_palette: colorPalette, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
+}
+
+export async function saveLoadingScreen(loadingScreen) {
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ loading_screen: loadingScreen, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
+}
+
 export async function getHeroPills() {
   const { data, error } = await supabase
     .from("site_settings")

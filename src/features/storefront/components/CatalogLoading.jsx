@@ -1,12 +1,12 @@
-export default function CatalogLoading() {
+export default function CatalogLoading({ content }) {
   return (
     <section className="catalog-loading" role="status" aria-busy="true" aria-labelledby="catalog-loading-title">
       <div className="catalog-loading-feature">
-        <img src="/images/bird.png" alt="" />
+        <img src={content.imageUrl} alt="" />
         <div className="catalog-loading-copy">
-          <p className="catalog-loading-kicker">STORE CATALOG</p>
-          <h2 id="catalog-loading-title">Getting the shop ready</h2>
-          <p>Fetching the latest products for you.</p>
+          <p className="catalog-loading-kicker">{content.kicker}</p>
+          <h2 id="catalog-loading-title">{content.title}</h2>
+          <p>{content.message}</p>
           <div className="catalog-loading-progress" role="progressbar" aria-label="Loading products"><span /></div>
         </div>
       </div>

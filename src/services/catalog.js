@@ -17,7 +17,31 @@ function mapProduct(row) {
   };
 }
 
-export async function getCatalog() {
+function mapSettings(row) {
+  return {
+    brandTitle: row.brand_title,
+    tagline: row.tagline,
+    logoUrl: row.logo_url ?? "",
+    faviconUrl: row.favicon_url ?? "",
+    colorPalette: row.color_palette ?? null,
+    loadingScreen: row.loading_screen ?? null,
+    heroPills: row.hero_pills ?? [],
+    contact: {
+      whatsappNumber: row.whatsapp_number,
+      phoneDisplay: row.phone_display,
+      email: row.email,
+      location: row.location,
+    },
+    features: row.features ?? [],
+    footerTitle: row.footer_title,
+    footerCopyright: row.footer_copyright,
+    footerDisclaimer: row.footer_disclaimer,
+    comingSoonTitle: row.coming_soon_title,
+    visibility: row.visibility ?? {},
+  };
+}
+
+export async function getCatalog(onSettingsLoaded) {
   if (!supabase) {
     return {
       products: [],
@@ -27,6 +51,15 @@ export async function getCatalog() {
     };
   }
 
+  const settingsRequest = supabase
+    .from("site_settings")
+    .select("logo_url, favicon_url, color_palette, loading_screen, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
+    .eq("id", "storefront")
+    .maybeSingle();
+  const settingsPromise = settingsRequest.then((result) => {
+    if (!result.error && result.data) onSettingsLoaded?.(mapSettings(result.data));
+    return result;
+  });
   const [productsResult, sectionsResult, settingsResult] = await Promise.all([
     supabase
       .from("products")
@@ -38,11 +71,7 @@ export async function getCatalog() {
       .select("id, title, display_order")
       .eq("is_active", true)
       .order("display_order", { ascending: true }),
-    supabase
-      .from("site_settings")
-      .select("logo_url, favicon_url, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
-      .eq("id", "storefront")
-      .maybeSingle(),
+    settingsPromise,
   ]);
 
   if (productsResult.error || sectionsResult.error || settingsResult.error) {
@@ -67,25 +96,7 @@ export async function getCatalog() {
   return {
     products: productsResult.data.map(mapProduct),
     sections: sectionsResult.data,
-    settings: {
-      brandTitle: row.brand_title,
-      tagline: row.tagline,
-      logoUrl: row.logo_url ?? "",
-      faviconUrl: row.favicon_url ?? "",
-      heroPills: row.hero_pills ?? [],
-      contact: {
-        whatsappNumber: row.whatsapp_number,
-        phoneDisplay: row.phone_display,
-        email: row.email,
-        location: row.location,
-      },
-      features: row.features ?? [],
-      footerTitle: row.footer_title,
-      footerCopyright: row.footer_copyright,
-      footerDisclaimer: row.footer_disclaimer,
-      comingSoonTitle: row.coming_soon_title,
-      visibility: row.visibility ?? {},
-    },
+    settings: mapSettings(row),
     error: null,
   };
 }

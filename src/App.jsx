@@ -7,6 +7,11 @@ import ScrollToTop from "./features/storefront/components/ScrollToTop.jsx";
 import StoreFooter from "./features/storefront/components/StoreFooter.jsx";
 import StoreHeader from "./features/storefront/components/StoreHeader.jsx";
 import useStorefrontCatalog from "./features/storefront/useStorefrontCatalog.js";
+import {
+  DEFAULT_LOADING_SCREEN,
+  applyColorPalette,
+  normalizeLoadingScreen,
+} from "./config/siteAppearance.js";
 
 export default function App() {
   const { products, sections, settings, loading, error } = useStorefrontCatalog();
@@ -30,9 +35,17 @@ export default function App() {
   }, [settings?.brandTitle]);
 
   useEffect(() => {
+    if (settings?.colorPalette) applyColorPalette(settings.colorPalette);
+  }, [settings?.colorPalette]);
+
+  useEffect(() => {
     const favicon = document.querySelector("#favicon");
     if (favicon) favicon.href = settings?.faviconUrl || "/images/favicon.png";
   }, [settings?.faviconUrl]);
+
+  const loadingScreen = settings?.loadingScreen
+    ? normalizeLoadingScreen(settings.loadingScreen)
+    : DEFAULT_LOADING_SCREEN;
 
   function scrollToTarget(target) {
     const element = document.getElementById(target.slice(1));
@@ -78,7 +91,7 @@ export default function App() {
         />
       )}
       <main className="container" id="top">
-        {loading ? <CatalogLoading /> : error ? (
+        {loading ? <CatalogLoading content={loadingScreen} /> : error ? (
           <p className="catalog-notice" role="alert">Catalog service is unavailable. Products could not be loaded from Supabase.</p>
         ) : (
           <>

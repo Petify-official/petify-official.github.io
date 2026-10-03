@@ -12,7 +12,9 @@ export default function useStorefrontCatalog() {
 
   useEffect(() => {
     let active = true;
-    getCatalog().then((result) => {
+    getCatalog((settings) => {
+      if (active) setCatalog((current) => ({ ...current, settings }));
+    }).then((result) => {
       if (!active) return;
       setCatalog({ ...result, loading: false });
     }).catch((error) => {

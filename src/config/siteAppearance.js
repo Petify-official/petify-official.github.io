@@ -1,0 +1,109 @@
+export const COLOR_PALETTES = {
+  petify: {
+    name: "Petify Blue & Gold",
+    colors: {
+      primary: "#1d4ed8",
+      primaryDark: "#1e3a8a",
+      accent: "#f59e0b",
+      background: "#f8fafc",
+      text: "#0f172a",
+      muted: "#475569",
+      card: "#ffffff",
+    },
+  },
+  ocean: {
+    name: "Ocean Teal",
+    colors: {
+      primary: "#0f766e",
+      primaryDark: "#134e4a",
+      accent: "#f97316",
+      background: "#f0fdfa",
+      text: "#134e4a",
+      muted: "#475569",
+      card: "#ffffff",
+    },
+  },
+  forest: {
+    name: "Forest Green",
+    colors: {
+      primary: "#15803d",
+      primaryDark: "#14532d",
+      accent: "#eab308",
+      background: "#f7fee7",
+      text: "#1c1917",
+      muted: "#57534e",
+      card: "#ffffff",
+    },
+  },
+  sunset: {
+    name: "Sunset Rose",
+    colors: {
+      primary: "#be123c",
+      primaryDark: "#881337",
+      accent: "#fb923c",
+      background: "#fff1f2",
+      text: "#1f2937",
+      muted: "#575569",
+      card: "#ffffff",
+    },
+  },
+};
+
+export const DEFAULT_COLOR_PALETTE = {
+  preset: "petify",
+  colors: COLOR_PALETTES.petify.colors,
+};
+
+export const DEFAULT_LOADING_SCREEN = {
+  kicker: "STORE CATALOG",
+  title: "Getting the shop ready",
+  message: "Fetching the latest products for you.",
+  imageUrl: "/images/bird.png",
+};
+
+const cssColorVariables = {
+  primary: "--primary",
+  primaryDark: "--primary-dark",
+  accent: "--accent",
+  background: "--bg-light",
+  text: "--text-dark",
+  muted: "--text-muted",
+  card: "--card-bg",
+};
+
+function isHexColor(value) {
+  return /^#[0-9a-f]{6}$/i.test(value);
+}
+
+export function normalizeColorPalette(palette) {
+  const colors = palette?.colors ?? {};
+  return {
+    preset: COLOR_PALETTES[palette?.preset] ? palette.preset : "custom",
+    colors: Object.fromEntries(
+      Object.entries(DEFAULT_COLOR_PALETTE.colors).map(([key, defaultColor]) => [
+        key,
+        isHexColor(colors[key]) ? colors[key] : defaultColor,
+      ]),
+    ),
+  };
+}
+
+export function normalizeLoadingScreen(loadingScreen) {
+  return {
+    ...DEFAULT_LOADING_SCREEN,
+    ...loadingScreen,
+    kicker: typeof loadingScreen?.kicker === "string" ? loadingScreen.kicker : DEFAULT_LOADING_SCREEN.kicker,
+    title: typeof loadingScreen?.title === "string" ? loadingScreen.title : DEFAULT_LOADING_SCREEN.title,
+    message: typeof loadingScreen?.message === "string" ? loadingScreen.message : DEFAULT_LOADING_SCREEN.message,
+    imageUrl: typeof loadingScreen?.imageUrl === "string" && loadingScreen.imageUrl
+      ? loadingScreen.imageUrl
+      : DEFAULT_LOADING_SCREEN.imageUrl,
+  };
+}
+
+export function applyColorPalette(palette) {
+  const { colors } = normalizeColorPalette(palette);
+  for (const [key, variable] of Object.entries(cssColorVariables)) {
+    document.documentElement.style.setProperty(variable, colors[key]);
+  }
+}

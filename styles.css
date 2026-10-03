@@ -1,7 +1,7 @@
 :root {
-  --primary: #1d4ed8;       /* Deep Petify Blue */
-  --primary-dark: #1e3a8a;  /* Navy Accent */
-  --accent: #f59e0b;        /* Gold/Orange Accent */
+  --primary: #1d4ed8;
+  --primary-dark: #1e3a8a;
+  --accent: #f59e0b;
   --bg-light: #f8fafc;
   --text-dark: #0f172a;
   --text-muted: #475569;
@@ -120,7 +120,7 @@ html {
   padding: 1.5rem;
   border: 1px solid #dbe3ea;
   border-radius: 8px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .catalog-loading-feature {
@@ -165,7 +165,7 @@ html {
   margin-top: 1rem;
   overflow: hidden;
   border-radius: 4px;
-  background: #e2e8f0;
+  background: var(--bg-light);
 }
 
 .catalog-loading-progress span {
@@ -196,7 +196,7 @@ html {
   margin: 3rem auto;
   padding: 1rem 1.25rem;
   border-left: 3px solid #b91c1c;
-  background: white;
+  background: var(--card-bg);
   color: #7f1d1d;
   text-align: center;
 }
@@ -433,7 +433,7 @@ html {
 
 /* Features Bar */
 .features-grid {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 1.5rem;
   margin-top: 2rem;
@@ -535,7 +535,7 @@ footer a {
   padding: 2rem;
   display: grid;
   place-content: center;
-  background: #f8fafc;
+  background: var(--bg-light);
 }
 
 .admin-login {
@@ -545,7 +545,7 @@ footer a {
   padding: 2.25rem;
   border: 1px solid #dbe3ea;
   border-radius: 8px;
-  background: white;
+  background: var(--card-bg);
   box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
 }
 
@@ -553,7 +553,7 @@ footer a {
   max-width: 620px;
   padding: 2rem;
   border-left: 4px solid var(--accent);
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-gate h1,
@@ -570,7 +570,7 @@ footer a {
 .admin-form-grid label {
   display: grid;
   gap: 0.4rem;
-  color: #334155;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 650;
 }
@@ -587,7 +587,7 @@ footer a {
   padding: 0.65rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
   color: var(--text-dark);
   font: inherit;
   font-weight: 400;
@@ -631,8 +631,8 @@ footer a {
 
 .admin-secondary-button {
   border-color: #cbd5e1;
-  background: white;
-  color: #334155;
+  background: var(--card-bg);
+  color: var(--text-muted);
 }
 
 .admin-primary-button:disabled {
@@ -681,7 +681,7 @@ footer a {
 
 .admin-shell {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-light);
 }
 
 .admin-topbar {
@@ -691,7 +691,7 @@ footer a {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  background: #102a43;
+  background: var(--primary-dark);
   color: white;
 }
 
@@ -704,7 +704,7 @@ footer a {
 
 .admin-brand span {
   margin-left: 0.45rem;
-  color: #fbbf24;
+  color: var(--accent);
   font-size: 0.67rem;
   letter-spacing: 0.08em;
 }
@@ -763,7 +763,7 @@ footer a {
   border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
-  color: #334155;
+  color: var(--text-muted);
   font: inherit;
   text-align: left;
   text-decoration: none;
@@ -777,7 +777,7 @@ footer a {
 
 .admin-sidebar button.active {
   border-color: #cbd5e1;
-  background: white;
+  background: var(--card-bg);
   color: var(--text-dark);
   font-weight: 700;
 }
@@ -852,7 +852,7 @@ footer a {
   flex: 1;
   display: grid;
   gap: 0.4rem;
-  color: #334155;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 650;
 }
@@ -863,7 +863,7 @@ footer a {
   padding: 0.65rem 0.75rem;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
   color: var(--text-dark);
   font: inherit;
   font-weight: 400;
@@ -874,6 +874,75 @@ footer a {
   border-color: var(--primary);
 }
 
+.admin-color-palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: var(--card-bg);
+}
+
+.admin-color-palette legend {
+  padding: 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.admin-color-palette label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.admin-color-palette input[type="color"] {
+  width: 100%;
+  height: 42px;
+  padding: 0.2rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: var(--card-bg);
+  cursor: pointer;
+}
+
+.admin-loading-screen-form {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dbe3ea;
+}
+
+.admin-loading-screen-form h3 {
+  color: var(--text-dark);
+}
+
+.admin-loading-image {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-loading-image img {
+  width: 120px;
+  height: 100px;
+  padding: 0.35rem;
+  border: 1px solid #dbe3ea;
+  border-radius: 4px;
+  background: var(--card-bg);
+  object-fit: contain;
+}
+
+.admin-loading-image label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
 .admin-store-logo {
   margin: 1rem 0 1.5rem;
   padding: 0.85rem;
@@ -882,7 +951,7 @@ footer a {
   gap: 0.75rem;
   border: 1px solid #dbe3ea;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-store-logo img {
@@ -892,7 +961,7 @@ footer a {
   padding: 0.2rem;
   border: 1px solid #dbe3ea;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
   object-fit: contain;
 }
 
@@ -901,7 +970,7 @@ footer a {
   flex: 1;
   display: grid;
   gap: 0.35rem;
-  color: #334155;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 650;
 }
@@ -921,7 +990,7 @@ footer a {
   padding: 1rem;
   border: 1px solid #dbe3ea;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-hero-pills-heading {
@@ -950,7 +1019,7 @@ footer a {
   min-width: 0;
   display: grid;
   gap: 0.35rem;
-  color: #334155;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 650;
 }
@@ -962,7 +1031,7 @@ footer a {
   padding: 0.55rem 0.65rem;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
   color: var(--text-dark);
   font: inherit;
   font-weight: 400;
@@ -1005,7 +1074,7 @@ footer a {
   gap: 0.75rem;
   border: 1px solid #dbe3ea;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-section-order-name strong,
@@ -1064,7 +1133,7 @@ footer a {
 .admin-section-order-actions .admin-delete-button {
   border: 1px solid #fecaca;
   border-radius: 4px;
-  background: white;
+  background: var(--card-bg);
   color: #b91c1c;
   font: inherit;
   cursor: pointer;
@@ -1085,7 +1154,7 @@ footer a {
   overflow-x: auto;
   border: 1px solid #dbe3ea;
   border-radius: 6px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-table {
@@ -1102,8 +1171,8 @@ footer a {
 }
 
 .admin-table th {
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--bg-light);
+  color: var(--text-muted);
   font-size: 0.75rem;
   text-transform: uppercase;
 }
@@ -1172,7 +1241,7 @@ footer a {
 
 .admin-row-actions button {
   border-color: #cbd5e1;
-  color: #334155;
+  color: var(--text-muted);
 }
 
 .admin-row-actions .admin-delete-button {
@@ -1189,7 +1258,7 @@ footer a {
   padding: 1.5rem;
   border: 1px solid #dbe3ea;
   border-radius: 6px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .admin-form-grid {
@@ -1290,7 +1359,7 @@ footer a {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  color: #334155;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 700;
 }
@@ -1357,8 +1426,8 @@ footer a {
   padding: 0.3rem;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  background: white;
-  color: #334155;
+  background: var(--card-bg);
+  color: var(--text-muted);
   font: inherit;
   cursor: pointer;
 }
@@ -1498,6 +1567,11 @@ footer a {
 
   .admin-store-logo {
     flex-wrap: wrap;
+  }
+
+  .admin-loading-image {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .admin-hero-pill-row {
