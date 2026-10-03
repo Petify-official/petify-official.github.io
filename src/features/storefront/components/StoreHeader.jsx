@@ -1,4 +1,4 @@
-export default function StoreHeader({ brandTitle, tagline, logoUrl, heroPills, visibility, onPillClick }) {
+export default function StoreHeader({ brandTitle, tagline, logoUrl, heroPills, visibility, onLogoClick, onPillClick }) {
   const showBrand = visibility.brand ?? true;
   const showTagline = visibility.tagline ?? true;
   const showPills = visibility.hero_pills ?? true;
@@ -9,7 +9,7 @@ export default function StoreHeader({ brandTitle, tagline, logoUrl, heroPills, v
       {showBrand && (
         <h1 className="brand-title">
           {logoUrl
-            ? <a href="#top" id="logo-link" title="Scroll to top" onContextMenu={(event) => event.preventDefault()}><img src={logoUrl} alt={`${brandTitle} logo`} className="brand-logo" /></a>
+            ? <a href="#top" id="logo-link" title="Scroll to top" onClick={(event) => { event.preventDefault(); onLogoClick(); }} onContextMenu={(event) => event.preventDefault()}><img src={logoUrl} alt={`${brandTitle} logo`} className="brand-logo" /></a>
             : brandTitle}
         </h1>
       )}

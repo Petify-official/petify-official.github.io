@@ -29,8 +29,7 @@ export default function App() {
     if (settings?.brandTitle) document.title = settings.brandTitle;
   }, [settings?.brandTitle]);
 
-  function scrollToHeroTarget(event, target) {
-    event.preventDefault();
+  function scrollToTarget(target) {
     const element = document.getElementById(target.slice(1));
     if (!element) return;
 
@@ -39,6 +38,15 @@ export default function App() {
     } else {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+  }
+
+  function scrollToHeroTarget(event, target) {
+    event.preventDefault();
+    scrollToTarget(target);
+  }
+
+  function scrollToFirstSection() {
+    scrollToTarget("#top");
   }
 
   function scrollToTop() {
@@ -60,6 +68,7 @@ export default function App() {
           logoUrl={settings.logoUrl}
           heroPills={settings.heroPills}
           visibility={settings.visibility}
+          onLogoClick={scrollToFirstSection}
           onPillClick={scrollToHeroTarget}
         />
       )}
