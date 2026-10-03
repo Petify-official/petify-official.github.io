@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import {
   COLOR_PALETTES,
   DEFAULT_COLOR_PALETTE,
+  DEFAULT_ADMIN_BRAND,
   DEFAULT_LOADING_SCREEN,
   applyColorPalette,
+  normalizeAdminBrand,
   normalizeColorPalette,
   normalizeLoadingScreen,
 } from "../../config/siteAppearance.js";
 import {
   getAppearanceSettings,
+  saveAdminBrand,
   saveColorPalette,
   saveLoadingScreen,
   uploadProductImages,
@@ -24,13 +27,15 @@ const colorFields = [
   ["card", "Card background"],
 ];
 
-export default function AppearanceSettingsEditor() {
+export default function AppearanceSettingsEditor({ adminBrand, onAdminBrandChange }) {
   const [palette, setPalette] = useState(DEFAULT_COLOR_PALETTE);
   const [loadingScreen, setLoadingScreen] = useState(DEFAULT_LOADING_SCREEN);
+  const [dashboardBrand, setDashboardBrand] = useState(normalizeAdminBrand(adminBrand ?? DEFAULT_ADMIN_BRAND));
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [loading, setLoading] = useState(true);
   const [savingPalette, setSavingPalette] = useState(false);
+  const [savingAdminBrand, setSavingAdminBrand] = useState(false);
   const [savingLoadingScreen, setSavingLoadingScreen] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -47,11 +52,14 @@ export default function AppearanceSettingsEditor() {
 
   useEffect(() => {
     let active = true;
-    getAppearanceSettings().then(({ colorPalette, loadingScreen: savedLoadingScreen }) => {
+    getAppearanceSettings().then(({ colorPalette, loadingScreen: savedLoadingScreen, adminBrand: savedAdminBrand }) => {
       if (!active) return;
       const nextPalette = normalizeColorPalette(colorPalette);
       setPalette(nextPalette);
       setLoadingScreen(normalizeLoadingScreen(savedLoadingScreen));
+      const nextAdminBrand = normalizeAdminBrand(savedAdminBrand);
+      setDashboardBrand(nextAdminBrand);
+      onAdminBrandChange(nextAdminBrand);
       applyColorPalette(nextPalette);
     }).catch((loadError) => {
       if (active) setError(loadError.message || "Appearance settings could not be loaded.");
@@ -60,6 +68,29 @@ export default function AppearanceSettingsEditor() {
     });
     return () => { active = false; };
   }, []);
+
+  function updateAdminBrand(field, value) {
+    setDashboardBrand((current) => ({ ...current, [field]: value }));
+    setNotice("");
+  }
+
+  async function submitAdminBrand(event) {
+    event.preventDefault();
+    const nextAdminBrand = normalizeAdminBrand(dashboardBrand);
+    setSavingAdminBrand(true);
+    setError("");
+    setNotice("");
+    try {
+      await saveAdminBrand(nextAdminBrand);
+      setDashboardBrand(nextAdminBrand);
+      onAdminBrandChange(nextAdminBrand);
+      setNotice("Dashboard branding saved.");
+    } catch (saveError) {
+      setError(saveError.message || "Dashboard branding could not be saved.");
+    } finally {
+      setSavingAdminBrand(false);
+    }
+  }
 
   function choosePreset(preset) {
     const nextPalette = preset === "custom"
@@ -133,6 +164,14 @@ export default function AppearanceSettingsEditor() {
       </div>
       {error && <p className="admin-error" role="alert">{error}</p>}
       {notice && <p className="admin-success" role="status">{notice}</p>}
+      <form className="admin-form-grid admin-loading-screen-form" onSubmit={submitAdminBrand}>
+        <h3 className="admin-span-two">Admin dashboard brand</h3>
+        <label>Dashboard name<input value={dashboardBrand.name} onChange={(event) => updateAdminBrand("name", event.target.value)} required /></label>
+        <label>Dashboard label<input value={dashboardBrand.label} onChange={(event) => updateAdminBrand("label", event.target.value)} required /></label>
+        <div className="admin-form-actions admin-span-two">
+          <button className="admin-primary-button" type="submit" disabled={savingAdminBrand}>{savingAdminBrand ? "Saving..." : "Save dashboard branding"}</button>
+        </div>
+      </form>
       <form className="admin-form-grid" onSubmit={submitPalette}>
         <label className="admin-span-two">Color palette
           <select value={palette.preset} onChange={(event) => choosePreset(event.target.value)}>

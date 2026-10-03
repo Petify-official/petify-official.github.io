@@ -71,7 +71,16 @@ export async function getAppearanceSettings() {
   return {
     colorPalette: data.color_palette ?? null,
     loadingScreen: data.loading_screen ?? null,
+    adminBrand: data.admin_brand ?? null,
   };
+}
+
+export async function saveAdminBrand(adminBrand) {
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ admin_brand: adminBrand, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
 }
 
 export async function saveColorPalette(colorPalette) {

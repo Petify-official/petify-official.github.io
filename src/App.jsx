@@ -75,7 +75,7 @@ export default function App() {
     }
   }
 
-  if (isAdminRoute) return <AdminDashboard />;
+  if (isAdminRoute) return <AdminDashboard adminBrand={settings?.adminBrand} />;
 
   return (
     <>

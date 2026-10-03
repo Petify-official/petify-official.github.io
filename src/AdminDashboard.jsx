@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import SiteSettingsManager from "./features/admin/SiteSettingsManager.jsx";
 import { supabase } from "./lib/supabase.js";
+import { DEFAULT_ADMIN_BRAND, normalizeAdminBrand } from "./config/siteAppearance.js";
 import {
   createCatalogSection,
   deleteProduct,
@@ -48,7 +49,7 @@ function asEditableProduct(product) {
   };
 }
 
-function AdminLogin({ onSignedIn }) {
+function AdminLogin({ adminBrand, onSignedIn }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -69,7 +70,7 @@ function AdminLogin({ onSignedIn }) {
 
   return (
     <form className="admin-login" onSubmit={submit}>
-      <p className="admin-eyebrow">PETIFY CATALOG</p>
+      <p className="admin-eyebrow">{`${adminBrand.name} ${adminBrand.label}`}</p>
       <h1>Admin sign in</h1>
       <p className="admin-muted">Sign in with the account you created in Supabase Authentication.</p>
       <label>Email<input type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
@@ -244,7 +245,7 @@ function ProductEditor({ product, sections, onCancel, onSave }) {
   );
 }
 
-function ProductManager({ session }) {
+function ProductManager({ session, adminBrand, onAdminBrandChange }) {
   const [products, setProducts] = useState([]);
   const [sections, setSections] = useState([]);
   const [editorProduct, setEditorProduct] = useState(null);
@@ -400,7 +401,7 @@ function ProductManager({ session }) {
   return (
     <div className="admin-shell">
       <header className="admin-topbar">
-        <a className="admin-brand" href="/">Pëtify <span>CATALOG</span></a>
+        <a className="admin-brand" href="/">{adminBrand.name} <span>{adminBrand.label}</span></a>
         <div className="admin-user"><span>{session.user.email}</span><button onClick={signOut}>Sign out</button></div>
       </header>
       <main className="admin-content">
@@ -414,7 +415,7 @@ function ProductManager({ session }) {
           {activeView === "site-settings" ? (
             <>
               <div className="admin-page-heading"><div><p className="admin-eyebrow">SITE CONFIGURATION</p><h1>Site settings</h1><p className="admin-muted">Manage your brand, content, and what appears on the storefront.</p></div></div>
-              <SiteSettingsManager />
+              <SiteSettingsManager adminBrand={adminBrand} onAdminBrandChange={onAdminBrandChange} />
             </>
           ) : editorProduct ? (
             <ProductEditor
@@ -497,12 +498,17 @@ function ProductManager({ session }) {
   );
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ adminBrand: initialAdminBrand }) {
   const [session, setSession] = useState(null);
   const [checkingSession, setCheckingSession] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(false);
   const [setupError, setSetupError] = useState("");
+  const [adminBrand, setAdminBrand] = useState(() => normalizeAdminBrand(initialAdminBrand ?? DEFAULT_ADMIN_BRAND));
+
+  useEffect(() => {
+    if (initialAdminBrand) setAdminBrand(normalizeAdminBrand(initialAdminBrand));
+  }, [initialAdminBrand]);
 
   useEffect(() => {
     if (!supabase) {
@@ -552,7 +558,7 @@ export default function AdminDashboard() {
     return <div className="admin-gate"><p className="admin-muted">Checking admin access...</p></div>;
   }
 
-  if (!session) return <AdminLogin onSignedIn={setSession} />;
+  if (!session) return <AdminLogin adminBrand={adminBrand} onSignedIn={setSession} />;
 
   if (!isAdmin) {
     return (
@@ -562,5 +568,5 @@ export default function AdminDashboard() {
     );
   }
 
-  return <ProductManager session={session} />;
+  return <ProductManager session={session} adminBrand={adminBrand} onAdminBrandChange={setAdminBrand} />;
 }

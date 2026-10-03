@@ -12,7 +12,7 @@ import {
   updateStoreLogo,
 } from "../../services/admin.js";
 
-export default function SiteSettingsManager() {
+export default function SiteSettingsManager({ adminBrand, onAdminBrandChange }) {
   const [storeLogo, setStoreLogo] = useState("");
   const [storeFavicon, setStoreFavicon] = useState("");
   const [heroPills, setHeroPills] = useState([]);
@@ -115,7 +115,7 @@ export default function SiteSettingsManager() {
       {error && <p className="admin-error" role="alert">{error}</p>}
       {notice && <p className="admin-success" role="status">{notice}</p>}
       <StorefrontContentEditor />
-      <AppearanceSettingsEditor />
+      <AppearanceSettingsEditor adminBrand={adminBrand} onAdminBrandChange={onAdminBrandChange} />
       <section className="admin-settings-block" aria-labelledby="admin-logo-settings-title">
         <div className="admin-settings-heading"><div><p className="admin-eyebrow">BRAND ASSET</p><h2 id="admin-logo-settings-title">Store logo</h2></div></div>
         <form className="admin-store-logo" onSubmit={submitLogo}>

@@ -92,6 +92,7 @@ alter table public.site_settings
   add column if not exists favicon_url text,
   add column if not exists color_palette jsonb not null default '{"preset":"petify","colors":{"primary":"#1d4ed8","primaryDark":"#1e3a8a","accent":"#f59e0b","background":"#f8fafc","text":"#0f172a","muted":"#475569","card":"#ffffff"}}'::jsonb,
   add column if not exists loading_screen jsonb not null default '{"kicker":"STORE CATALOG","title":"Getting the shop ready","message":"Fetching the latest products for you.","imageUrl":"/images/bird.png"}'::jsonb,
+  add column if not exists admin_brand jsonb not null default '{"name":"Pëtify","label":"Catalog"}'::jsonb,
   add column if not exists brand_title text not null default 'Pëtify',
   add column if not exists tagline text not null default 'Pure love, premium care',
   add column if not exists whatsapp_number text not null default '919745001101',

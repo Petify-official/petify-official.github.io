@@ -61,6 +61,11 @@ export const DEFAULT_LOADING_SCREEN = {
   imageUrl: "/images/bird.png",
 };
 
+export const DEFAULT_ADMIN_BRAND = {
+  name: "Pëtify",
+  label: "Catalog",
+};
+
 const cssColorVariables = {
   primary: "--primary",
   primaryDark: "--primary-dark",
@@ -98,6 +103,17 @@ export function normalizeLoadingScreen(loadingScreen) {
     imageUrl: typeof loadingScreen?.imageUrl === "string" && loadingScreen.imageUrl
       ? loadingScreen.imageUrl
       : DEFAULT_LOADING_SCREEN.imageUrl,
+  };
+}
+
+export function normalizeAdminBrand(adminBrand) {
+  return {
+    name: typeof adminBrand?.name === "string" && adminBrand.name.trim()
+      ? adminBrand.name.trim()
+      : DEFAULT_ADMIN_BRAND.name,
+    label: typeof adminBrand?.label === "string" && adminBrand.label.trim()
+      ? adminBrand.label.trim()
+      : DEFAULT_ADMIN_BRAND.label,
   };
 }
 
