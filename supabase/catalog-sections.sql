@@ -89,6 +89,7 @@ values ('storefront')
 on conflict (id) do nothing;
 
 alter table public.site_settings
+  add column if not exists favicon_url text,
   add column if not exists brand_title text not null default 'Pëtify',
   add column if not exists tagline text not null default 'Pure love, premium care',
   add column if not exists whatsapp_number text not null default '919745001101',

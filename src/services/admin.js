@@ -48,6 +48,17 @@ export async function getStoreLogo() {
   return data?.logo_url ?? "";
 }
 
+export async function getStoreFavicon() {
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("favicon_url")
+    .eq("id", "storefront")
+    .maybeSingle();
+  if (error) throw error;
+
+  return data?.favicon_url ?? "";
+}
+
 export async function getHeroPills() {
   const { data, error } = await supabase
     .from("site_settings")
@@ -156,6 +167,17 @@ export async function updateStoreLogo(file) {
   if (error) throw error;
 
   return logoUrl;
+}
+
+export async function updateStoreFavicon(file) {
+  const [faviconUrl] = await uploadProductImages("store-settings", [file]);
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ favicon_url: faviconUrl, updated_at: new Date().toISOString() })
+    .eq("id", "storefront");
+  if (error) throw error;
+
+  return faviconUrl;
 }
 
 export async function uploadProductImages(productId, files, onProgress) {

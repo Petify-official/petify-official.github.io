@@ -3,19 +3,24 @@ import StorefrontContentEditor from "./StorefrontContentEditor.jsx";
 import {
   getAdminProducts,
   getAdminSections,
+  getStoreFavicon,
   getHeroPills,
   getStoreLogo,
   saveHeroPills,
+  updateStoreFavicon,
   updateStoreLogo,
 } from "../../services/admin.js";
 
 export default function SiteSettingsManager() {
   const [storeLogo, setStoreLogo] = useState("");
+  const [storeFavicon, setStoreFavicon] = useState("");
   const [heroPills, setHeroPills] = useState([]);
   const [sections, setSections] = useState([]);
   const [products, setProducts] = useState([]);
   const [logoFile, setLogoFile] = useState(null);
+  const [faviconFile, setFaviconFile] = useState(null);
   const [savingLogo, setSavingLogo] = useState(false);
+  const [savingFavicon, setSavingFavicon] = useState(false);
   const [savingHeroPills, setSavingHeroPills] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -23,9 +28,10 @@ export default function SiteSettingsManager() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getStoreLogo(), getHeroPills(), getAdminSections(), getAdminProducts()]).then(([logo, pills, nextSections, nextProducts]) => {
+    Promise.all([getStoreLogo(), getStoreFavicon(), getHeroPills(), getAdminSections(), getAdminProducts()]).then(([logo, favicon, pills, nextSections, nextProducts]) => {
       if (!active) return;
       setStoreLogo(logo);
+      setStoreFavicon(favicon);
       setHeroPills(pills);
       setSections(nextSections);
       setProducts(nextProducts);
@@ -53,6 +59,25 @@ export default function SiteSettingsManager() {
       setError(saveError.message || "Logo could not be saved.");
     } finally {
       setSavingLogo(false);
+    }
+  }
+
+  async function submitFavicon(event) {
+    event.preventDefault();
+    if (!faviconFile) return;
+    const form = event.currentTarget;
+    setSavingFavicon(true);
+    setError("");
+    setNotice("");
+    try {
+      setStoreFavicon(await updateStoreFavicon(faviconFile));
+      setFaviconFile(null);
+      form.reset();
+      setNotice("Favicon saved.");
+    } catch (saveError) {
+      setError(saveError.message || "Favicon could not be saved.");
+    } finally {
+      setSavingFavicon(false);
     }
   }
 
@@ -95,6 +120,14 @@ export default function SiteSettingsManager() {
           {storeLogo ? <img src={storeLogo} alt="Current store logo" /> : <span className="admin-store-logo-empty">No logo uploaded</span>}
           <label>Upload logo<input type="file" accept="image/*" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} /></label>
           <button className="admin-primary-button" type="submit" disabled={savingLogo || !logoFile}>{savingLogo ? "Uploading..." : "Save logo"}</button>
+        </form>
+      </section>
+      <section className="admin-settings-block" aria-labelledby="admin-favicon-settings-title">
+        <div className="admin-settings-heading"><div><p className="admin-eyebrow">BRAND ASSET</p><h2 id="admin-favicon-settings-title">Browser favicon</h2></div></div>
+        <form className="admin-store-logo" onSubmit={submitFavicon}>
+          {storeFavicon ? <img src={storeFavicon} alt="Current browser favicon" /> : <span className="admin-store-logo-empty">Default icon</span>}
+          <label>Upload favicon<input type="file" accept="image/*,.ico" onChange={(event) => setFaviconFile(event.target.files?.[0] ?? null)} /></label>
+          <button className="admin-primary-button" type="submit" disabled={savingFavicon || !faviconFile}>{savingFavicon ? "Uploading..." : "Save favicon"}</button>
         </form>
       </section>
       <section className="admin-settings-block" aria-labelledby="admin-navigation-settings-title">

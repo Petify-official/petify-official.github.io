@@ -40,7 +40,7 @@ export async function getCatalog() {
       .order("display_order", { ascending: true }),
     supabase
       .from("site_settings")
-      .select("logo_url, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
+      .select("logo_url, favicon_url, hero_pills, brand_title, tagline, whatsapp_number, phone_display, email, location, features, footer_title, footer_copyright, footer_disclaimer, coming_soon_title, visibility")
       .eq("id", "storefront")
       .maybeSingle(),
   ]);
@@ -71,6 +71,7 @@ export async function getCatalog() {
       brandTitle: row.brand_title,
       tagline: row.tagline,
       logoUrl: row.logo_url ?? "",
+      faviconUrl: row.favicon_url ?? "",
       heroPills: row.hero_pills ?? [],
       contact: {
         whatsappNumber: row.whatsapp_number,

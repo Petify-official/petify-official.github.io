@@ -29,6 +29,11 @@ export default function App() {
     if (settings?.brandTitle) document.title = settings.brandTitle;
   }, [settings?.brandTitle]);
 
+  useEffect(() => {
+    const favicon = document.querySelector("#favicon");
+    if (favicon) favicon.href = settings?.faviconUrl || "/images/favicon.png";
+  }, [settings?.faviconUrl]);
+
   function scrollToTarget(target) {
     const element = document.getElementById(target.slice(1));
     if (!element) return;
